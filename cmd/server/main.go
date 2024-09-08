@@ -10,9 +10,6 @@ import (
 	"github.com/aridae/go-metrics-store/internal/server/usecases/gauge"
 	tsstorage "github.com/aridae/go-metrics-store/pkg/ts-storage"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 // Сервер должен быть доступен по адресу http://localhost:8080
@@ -27,7 +24,7 @@ const (
 )
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx := context.Background()
 
 	memStore := tsstorage.New()
 
@@ -41,22 +38,7 @@ func main() {
 	httpRouter := handlers.NewRouter(useCaseController)
 	httpServer := http.NewServer(address, httpRouter)
 
-	go func() {
-		defer cancel()
-		_ = httpServer.Run(ctx)
-	}()
-
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
-
-	for {
-		select {
-		case <-quit:
-			if err := httpServer.Shutdown(ctx); err != nil {
-				log.Fatalf("Server shutdown failed: %v", err)
-			}
-		case <-ctx.Done():
-		}
+	if err := httpServer.Run(ctx); err != nil {
+		log.Fatalf("failed to start server: %v", err)
 	}
-
 }
