@@ -30,9 +30,7 @@ func getUpdateMetricByURLPathHandler(useCasesController *usecases.Controller) ht
 			return
 		}
 
-		params := make([]string, expectedPathParamsCount)
-		copy(params, strings.Split(r.URL.Path, "/"))
-
+		params := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 		if len(params) < expectedPathParamsCount {
 			http.Error(w, "unknown shit happened", http.StatusNotFound)
 			return
