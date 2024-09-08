@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/aridae/go-metrics-store/internal/server/models"
 	"github.com/aridae/go-metrics-store/internal/server/usecases"
@@ -31,9 +30,17 @@ func getUpdateMetricByURLPathHandler(useCasesController *usecases.Controller) ht
 			return
 		}
 
-		metricUpdater, err := buildMetricUpdaterFromURLPath(r.URL.Path)
+		params := make([]string, expectedPathParamsCount)
+		copy(params, strings.Split(r.URL.Path, "/"))
+
+		if len(params) < expectedPathParamsCount {
+			http.Error(w, "unknown shit happened", http.StatusNotFound)
+			return
+		}
+
+		metricUpdater, err := buildMetricUpdaterFromURLPath(params)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -47,14 +54,7 @@ func getUpdateMetricByURLPathHandler(useCasesController *usecases.Controller) ht
 	}
 }
 
-func buildMetricUpdaterFromURLPath(urlPath string) (models.ScalarMetricUpdater, error) {
-	params := make([]string, expectedPathParamsCount)
-	copy(params, strings.Split(urlPath, "/"))
-
-	if len(params) < expectedPathParamsCount {
-		return models.ScalarMetricUpdater{}, errors.New("unsupported URL params count")
-	}
-
+func buildMetricUpdaterFromURLPath(params []string) (models.ScalarMetricUpdater, error) {
 	metricNameURLParam := params[indexMetricName]
 	metricTypeURLParam := params[indexMetricType]
 	metricValueURLParam := params[indexMetricValue]
