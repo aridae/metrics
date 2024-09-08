@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	indexMetricName         = 3
-	indexMetricType         = 2
-	indexMetricValue        = 4
-	expectedPathParamsCount = 5
+	indexMetricName         = 2
+	indexMetricType         = 1
+	indexMetricValue        = 3
+	expectedPathParamsCount = 4
 
 	counterURLParam = "counter"
 	gaugeURLParam   = "gauge"
