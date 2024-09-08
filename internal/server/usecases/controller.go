@@ -1,8 +1,8 @@
 package usecases
 
 import (
-	"github.com/aridae/go-metrics-store/internal/metrics-store-server/usecases/counter"
-	"github.com/aridae/go-metrics-store/internal/metrics-store-server/usecases/gauge"
+	"github.com/aridae/go-metrics-store/internal/server/usecases/counter"
+	"github.com/aridae/go-metrics-store/internal/server/usecases/gauge"
 )
 
 type Controller struct {

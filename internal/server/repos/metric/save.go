@@ -2,7 +2,7 @@ package metric
 
 import (
 	"context"
-	"github.com/aridae/go-metrics-store/internal/metrics-store-server/models"
+	"github.com/aridae/go-metrics-store/internal/server/models"
 	tsstorage "github.com/aridae/go-metrics-store/pkg/ts-storage"
 )
 

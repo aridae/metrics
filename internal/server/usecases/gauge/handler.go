@@ -2,7 +2,7 @@ package gauge
 
 import (
 	"context"
-	"github.com/aridae/go-metrics-store/internal/metrics-store-server/models"
+	"github.com/aridae/go-metrics-store/internal/server/models"
 	"time"
 )
 

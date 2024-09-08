@@ -3,7 +3,7 @@ package usecases
 import (
 	"context"
 	"fmt"
-	"github.com/aridae/go-metrics-store/internal/metrics-store-server/models"
+	"github.com/aridae/go-metrics-store/internal/server/models"
 )
 
 func (c *Controller) UpsertScalarMetric(ctx context.Context, updater models.ScalarMetricUpdater) error {

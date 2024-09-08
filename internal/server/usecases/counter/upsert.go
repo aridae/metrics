@@ -3,7 +3,7 @@ package counter
 import (
 	"context"
 	"fmt"
-	"github.com/aridae/go-metrics-store/internal/metrics-store-server/models"
+	"github.com/aridae/go-metrics-store/internal/server/models"
 	"time"
 )
 

@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/aridae/go-metrics-store/internal/metrics-store-server/usecases"
+	"github.com/aridae/go-metrics-store/internal/server/usecases"
 	"net/http"
 )
 

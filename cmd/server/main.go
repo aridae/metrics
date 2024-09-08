@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"github.com/aridae/go-metrics-store/internal/metrics-store-server/repos/metric"
-	"github.com/aridae/go-metrics-store/internal/metrics-store-server/transport/http"
-	"github.com/aridae/go-metrics-store/internal/metrics-store-server/transport/http/handlers"
-	"github.com/aridae/go-metrics-store/internal/metrics-store-server/usecases"
-	"github.com/aridae/go-metrics-store/internal/metrics-store-server/usecases/counter"
-	"github.com/aridae/go-metrics-store/internal/metrics-store-server/usecases/gauge"
+	"github.com/aridae/go-metrics-store/internal/server/repos/metric"
+	"github.com/aridae/go-metrics-store/internal/server/transport/http"
+	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers"
+	"github.com/aridae/go-metrics-store/internal/server/usecases"
+	"github.com/aridae/go-metrics-store/internal/server/usecases/counter"
+	"github.com/aridae/go-metrics-store/internal/server/usecases/gauge"
 	tsstorage "github.com/aridae/go-metrics-store/pkg/ts-storage"
 	"log"
 	"os"
