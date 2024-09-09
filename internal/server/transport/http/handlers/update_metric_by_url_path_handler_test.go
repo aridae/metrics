@@ -1,8 +1,7 @@
 package handlers
 
 import (
-	"context"
-	"github.com/aridae/go-metrics-store/internal/server/models"
+	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers/_stub"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -153,8 +152,8 @@ func Test_getUpdateMetricByURLPathHandler_TableTest(t *testing.T) {
 			request := httptest.NewRequest(test.prereq.httpMethod, test.prereq.urlEndpoint, nil)
 			w := httptest.NewRecorder()
 
-			handler := getUpdateMetricByURLPathHandler(&controllerNoErrStub{})
-			handler(w, request)
+			router := NewRouter(&_stub.ControllerNoErrStub{})
+			router.updateMetricByURLPathHandler(w, request)
 
 			resp := w.Result()
 			_ = resp.Body.Close()
@@ -162,10 +161,4 @@ func Test_getUpdateMetricByURLPathHandler_TableTest(t *testing.T) {
 			assert.Equal(t, test.want.httpCode, resp.StatusCode)
 		})
 	}
-}
-
-type controllerNoErrStub struct{}
-
-func (stub *controllerNoErrStub) UpsertScalarMetric(ctx context.Context, updater models.ScalarMetricUpdater) error {
-	return nil
 }

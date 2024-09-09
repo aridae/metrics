@@ -9,16 +9,15 @@ import (
 type Server struct {
 	address string
 	server  *http.Server
-	mux     *http.ServeMux
 }
 
-func NewServer(address string, mux *http.ServeMux) *Server {
+func NewServer(address string, mux http.Handler) *Server {
 	server := &http.Server{
 		Addr:    address,
 		Handler: mux,
 	}
 
-	return &Server{mux: mux, address: address, server: server}
+	return &Server{address: address, server: server}
 }
 
 func (s *Server) Run(_ context.Context) error {

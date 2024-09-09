@@ -10,14 +10,11 @@ import (
 func (h *Handler) Upsert(ctx context.Context, updater models.ScalarMetricUpdater) error {
 	now := h.now()
 
-	metricName := updater.Name
-	metricType := updater.Type
-
 	// начать транзакцию
 
-	prevMetricState, err := h.metricsRepo.GetLatestState(ctx, metricType, metricName)
+	prevMetricState, err := h.metricsRepo.GetLatestState(ctx, updater.Key())
 	if err != nil {
-		return fmt.Errorf("metricsRepo.GetLatestState <metricType:%s> <metricName:%s>: %w", metricType, metricName, err)
+		return fmt.Errorf("metricsRepo.GetScalarMetricLatestState <metricKey:%s>: %w", updater.Key(), err)
 	}
 
 	newCounter := buildNewCounter(prevMetricState, updater, now)

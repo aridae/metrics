@@ -26,7 +26,7 @@ func main() {
 	counterUseCases := counter.NewHandler(metricsRepo)
 	gaugeUseCases := gauge.NewHandler(metricsRepo)
 
-	useCaseController := usecases.NewController(counterUseCases, gaugeUseCases)
+	useCaseController := usecases.NewController(metricsRepo, counterUseCases, gaugeUseCases)
 
 	httpRouter := handlers.NewRouter(useCaseController)
 	httpServer := http.NewServer(address, httpRouter)

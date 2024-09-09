@@ -8,6 +8,10 @@ func (s MetricKey) String() string {
 	return string(s)
 }
 
+func BuildMetricKey(metricType ScalarMetricType, metricName string) MetricKey {
+	return MetricKey(metricType.String() + ":" + metricName)
+}
+
 type ScalarMetricType string
 
 const (
@@ -29,7 +33,7 @@ type ScalarMetricUpdater struct {
 }
 
 func (su ScalarMetricUpdater) Key() MetricKey {
-	return MetricKey(su.Type.String() + ":" + su.Name)
+	return BuildMetricKey(su.Type, su.Name)
 }
 
 func (su ScalarMetricUpdater) AsCounterValue() CounterValue {
