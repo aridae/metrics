@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"context"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers/_stub"
+	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -14,6 +16,7 @@ func Test_getUpdateMetricByURLPathHandler_TableTest(t *testing.T) {
 	type prereq struct {
 		httpMethod  string
 		urlEndpoint string
+		chiParams   map[string]string
 	}
 
 	type want struct {
@@ -130,6 +133,11 @@ func Test_getUpdateMetricByURLPathHandler_TableTest(t *testing.T) {
 			prereq: prereq{
 				httpMethod:  http.MethodPost,
 				urlEndpoint: "/update/counter/testName/123",
+				chiParams: map[string]string{
+					urlParamMetricType:  "counter",
+					urlParamMetricName:  "testName",
+					urlParamMetricValue: "123",
+				},
 			},
 			want: want{
 				httpCode: http.StatusOK,
@@ -140,6 +148,11 @@ func Test_getUpdateMetricByURLPathHandler_TableTest(t *testing.T) {
 			prereq: prereq{
 				httpMethod:  http.MethodPost,
 				urlEndpoint: "/update/gauge/testName/123.5",
+				chiParams: map[string]string{
+					urlParamMetricType:  "gauge",
+					urlParamMetricName:  "testName",
+					urlParamMetricValue: "123.5",
+				},
 			},
 			want: want{
 				httpCode: http.StatusOK,
@@ -149,11 +162,19 @@ func Test_getUpdateMetricByURLPathHandler_TableTest(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			request := httptest.NewRequest(test.prereq.httpMethod, test.prereq.urlEndpoint, nil)
+			req := httptest.NewRequest(test.prereq.httpMethod, test.prereq.urlEndpoint, nil)
+
+			rctx := chi.NewRouteContext()
+			for k, v := range test.prereq.chiParams {
+				rctx.URLParams.Add(k, v)
+			}
+
+			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
 			w := httptest.NewRecorder()
 
 			router := NewRouter(&_stub.ControllerNoErrStub{})
-			router.updateMetricByURLPathHandler(w, request)
+			router.updateMetricByURLPathHandler(w, req)
 
 			resp := w.Result()
 			_ = resp.Body.Close()

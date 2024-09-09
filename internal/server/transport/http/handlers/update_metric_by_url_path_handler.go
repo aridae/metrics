@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func (rt *Router) updateMetricByURLPathHandler(w http.ResponseWriter, r *http.Request) {
@@ -14,6 +15,11 @@ func (rt *Router) updateMetricByURLPathHandler(w http.ResponseWriter, r *http.Re
 		http.Error(w, "Only POST requests are allowed.", http.StatusMethodNotAllowed)
 		return
 	}
+
+	if paramsCount := strings.Split(strings.Trim(r.URL.Path, "/"), "/"); len(paramsCount) != 4 {
+		http.Error(w, "Unknown URL path.", http.StatusNotFound)
+	}
+
 	ctx := r.Context()
 
 	metricType := chi.URLParam(r, urlParamMetricType)
