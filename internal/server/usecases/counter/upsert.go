@@ -14,7 +14,7 @@ func (h *Handler) Upsert(ctx context.Context, updater models.ScalarMetricUpdater
 
 	prevMetricState, err := h.metricsRepo.GetLatestState(ctx, updater.Key())
 	if err != nil {
-		return fmt.Errorf("metricsRepo.GetLatestState <metricType:%s> <metricName:%s>: %w", updater.Type, updater.Name, err)
+		return fmt.Errorf("metricsRepo.GetScalarMetricLatestState <metricKey:%s>: %w", updater.Key(), err)
 	}
 
 	newCounter := buildNewCounter(prevMetricState, updater, now)

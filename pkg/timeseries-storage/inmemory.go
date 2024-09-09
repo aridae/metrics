@@ -50,3 +50,18 @@ func (mem *MemTimeseriesStorage) GetLatest(_ context.Context, key Key) Timeserie
 
 	return timeseries[len(timeseries)-1]
 }
+
+func (mem *MemTimeseriesStorage) GetAllLatest(_ context.Context) []TimeseriesValue {
+	mem.mu.RLock()
+	defer mem.mu.RUnlock()
+
+	res := make([]TimeseriesValue, 0, len(mem.store))
+	for _, timeseries := range mem.store {
+		if len(timeseries) == 0 {
+			continue
+		}
+		res = append(res, timeseries[len(timeseries)-1])
+	}
+
+	return res
+}

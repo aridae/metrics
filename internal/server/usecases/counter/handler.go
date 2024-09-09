@@ -7,7 +7,7 @@ import (
 )
 
 type metricsRepo interface {
-	GetLatestState(ctx context.Context, key models.MetricKey) (*models.ScalarMetric, error)
+	GetLatestState(ctx context.Context, metricKey models.MetricKey) (*models.ScalarMetric, error)
 	Save(ctx context.Context, metric models.ScalarMetric) error
 }
 
