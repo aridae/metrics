@@ -43,7 +43,7 @@ func (m *MockmetricsRepo) EXPECT() *MockmetricsRepoMockRecorder {
 // GetLatestState mocks base method.
 func (m *MockmetricsRepo) GetLatestState(ctx context.Context, metricKey models.MetricKey) (*models.ScalarMetric, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetScalarMetricLatestState", ctx, metricKey)
+	ret := m.ctrl.Call(m, "GetLatestState", ctx, metricKey)
 	ret0, _ := ret[0].(*models.ScalarMetric)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
@@ -52,7 +52,7 @@ func (m *MockmetricsRepo) GetLatestState(ctx context.Context, metricKey models.M
 // GetLatestState indicates an expected call of GetLatestState.
 func (mr *MockmetricsRepoMockRecorder) GetLatestState(ctx, metricKey any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetScalarMetricLatestState", reflect.TypeOf((*MockmetricsRepo)(nil).GetLatestState), ctx, metricKey)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLatestState", reflect.TypeOf((*MockmetricsRepo)(nil).GetLatestState), ctx, metricKey)
 }
 
 // Save mocks base method.
