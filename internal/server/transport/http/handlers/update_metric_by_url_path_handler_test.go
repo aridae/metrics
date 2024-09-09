@@ -151,16 +151,15 @@ func Test_getUpdateMetricByURLPathHandler_TableTest(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			request := httptest.NewRequest(test.prereq.httpMethod, test.prereq.urlEndpoint, nil)
-
 			w := httptest.NewRecorder()
 
 			handler := getUpdateMetricByURLPathHandler(&controllerNoErrStub{})
-
 			handler(w, request)
 
-			res := w.Result()
+			resp := w.Result()
+			_ = resp.Body.Close()
 
-			assert.Equal(t, test.want.httpCode, res.StatusCode)
+			assert.Equal(t, test.want.httpCode, resp.StatusCode)
 		})
 	}
 }
