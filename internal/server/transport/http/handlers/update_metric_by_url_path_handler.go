@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/aridae/go-metrics-store/internal/server/models"
-	"github.com/aridae/go-metrics-store/internal/server/usecases"
 	"net/http"
 	"strconv"
 	"strings"
@@ -20,7 +19,7 @@ const (
 	gaugeURLParam   = "gauge"
 )
 
-func getUpdateMetricByURLPathHandler(useCasesController *usecases.Controller) http.HandlerFunc {
+func getUpdateMetricByURLPathHandler(useCasesController useCasesController) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithCancel(r.Context())
 		defer cancel()
@@ -53,6 +52,10 @@ func getUpdateMetricByURLPathHandler(useCasesController *usecases.Controller) ht
 }
 
 func buildMetricUpdaterFromURLPath(params []string) (models.ScalarMetricUpdater, error) {
+	if len(params) < expectedPathParamsCount {
+		return models.ScalarMetricUpdater{}, fmt.Errorf("invalid parameters count: expected at least %d, got %d", expectedPathParamsCount, len(params))
+	}
+
 	metricNameURLParam := params[indexMetricName]
 	metricTypeURLParam := params[indexMetricType]
 	metricValueURLParam := params[indexMetricValue]

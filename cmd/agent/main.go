@@ -13,16 +13,20 @@ import (
 )
 
 const (
-	pollInterval    = 2 * time.Second
+	collectInterval = 2 * time.Second
 	reportInterval  = 10 * time.Second
+
 	baseEndpointURL = "http://localhost:8080/update"
+
+	counterTypeURLParam = "counter"
+	gaugeTypeURLParam   = "gauge"
 )
 
 type gauge float64
 type counter int64
 
 func main() {
-	pollTick := time.NewTicker(pollInterval)
+	collectTick := time.NewTicker(collectInterval)
 	reportTick := time.NewTicker(reportInterval)
 
 	httpClient := &http.Client{}
@@ -32,18 +36,24 @@ func main() {
 
 	for {
 		select {
-		case <-pollTick.C:
+		case <-collectTick.C:
+			log.Printf("starting metrics collection routine <now:%s>\n", time.Now().UTC())
 			pollCounter++
 			collectMetrics(gaugeMetrics)
 		case <-reportTick.C:
-			for k, v := range gaugeMetrics {
-				metric := fmt.Sprint("/gauge/", k, "/", v)
-				reportMetric(httpClient, metric)
-			}
-			metric := fmt.Sprint("/counter/PollCount/", pollCounter)
-			reportMetric(httpClient, metric)
+			log.Printf("starting metrics report routine <now:%s>\n", time.Now().UTC())
+			reportMetrics(httpClient, gaugeMetrics, pollCounter)
 		}
 	}
+}
+
+func reportMetrics(client *http.Client, gaugeMetrics map[string]gauge, pollCountMetric counter) {
+	for metricName, metricVal := range gaugeMetrics {
+		metric := fmt.Sprintf("/%s/%s/%v", gaugeTypeURLParam, metricName, metricVal)
+		reportMetric(client, metric)
+	}
+	metric := fmt.Sprintf("/%s/%s/%v", counterTypeURLParam, PollCountMetricName, pollCountMetric)
+	reportMetric(client, metric)
 }
 
 func reportMetric(client *http.Client, metric string) {
@@ -60,7 +70,13 @@ func reportMetric(client *http.Client, metric string) {
 	if err != nil {
 		log.Fatalf("failed to do http request: %v", err)
 	}
-	defer resp.Body.Close()
+
+	defer func() {
+		err = resp.Body.Close()
+		if err != nil {
+			log.Fatalf("failed to close resp body: %v", err)
+		}
+	}()
 
 	_, err = io.Copy(io.Discard, resp.Body)
 	if err != nil {
@@ -71,34 +87,64 @@ func reportMetric(client *http.Client, metric string) {
 func collectMetrics(metrics map[string]gauge) {
 	var rtm runtime.MemStats
 	runtime.ReadMemStats(&rtm)
-
-	metrics["Alloc"] = gauge(rtm.Alloc)
-	metrics["TotalAlloc"] = gauge(rtm.TotalAlloc)
-	metrics["Sys"] = gauge(rtm.Sys)
-	metrics["Lookups"] = gauge(rtm.Lookups)
-	metrics["Mallocs"] = gauge(rtm.Mallocs)
-	metrics["Frees"] = gauge(rtm.Frees)
-	metrics["HeapAlloc"] = gauge(rtm.HeapAlloc)
-	metrics["HeapSys"] = gauge(rtm.HeapSys)
-	metrics["HeapIdle"] = gauge(rtm.HeapIdle)
-	metrics["HeapInuse"] = gauge(rtm.HeapInuse)
-	metrics["HeapReleased"] = gauge(rtm.HeapReleased)
-	metrics["HeapObjects"] = gauge(rtm.HeapObjects)
-	metrics["StackInuse"] = gauge(rtm.StackInuse)
-	metrics["StackSys"] = gauge(rtm.StackSys)
-	metrics["MSpanInuse"] = gauge(rtm.MSpanInuse)
-	metrics["MSpanSys"] = gauge(rtm.MSpanSys)
-	metrics["MCacheInuse"] = gauge(rtm.MCacheInuse)
-	metrics["MCacheSys"] = gauge(rtm.MCacheSys)
-	metrics["BuckHashSys"] = gauge(rtm.BuckHashSys)
-	metrics["GCSys"] = gauge(rtm.GCSys)
-	metrics["OtherSys"] = gauge(rtm.OtherSys)
-	metrics["NextGC"] = gauge(rtm.NextGC)
-	metrics["LastGC"] = gauge(rtm.LastGC)
-	metrics["PauseTotalNs"] = gauge(rtm.PauseTotalNs)
-	metrics["NumGC"] = gauge(rtm.NumGC)
-	metrics["NumForcedGC"] = gauge(rtm.NumForcedGC)
-	metrics["GCCPUFraction"] = gauge(rtm.GCCPUFraction)
-
-	metrics["RandomValue"] = gauge(rand.Float64())
+	metrics[AllocMetricName] = gauge(rtm.Alloc)
+	metrics[TotalAllocMetricName] = gauge(rtm.TotalAlloc)
+	metrics[SysMetricName] = gauge(rtm.Sys)
+	metrics[LookupsMetricName] = gauge(rtm.Lookups)
+	metrics[MallocsMetricName] = gauge(rtm.Mallocs)
+	metrics[FreesMetricName] = gauge(rtm.Frees)
+	metrics[HeapAllocMetricName] = gauge(rtm.HeapAlloc)
+	metrics[HeapSysMetricName] = gauge(rtm.HeapSys)
+	metrics[HeapIdleMetricName] = gauge(rtm.HeapIdle)
+	metrics[HeapInuseMetricName] = gauge(rtm.HeapInuse)
+	metrics[HeapReleasedMetricName] = gauge(rtm.HeapReleased)
+	metrics[HeapObjectsMetricName] = gauge(rtm.HeapObjects)
+	metrics[StackInuseMetricName] = gauge(rtm.StackInuse)
+	metrics[StackSysMetricName] = gauge(rtm.StackSys)
+	metrics[MSpanInuseMetricName] = gauge(rtm.MSpanInuse)
+	metrics[MSpanSysMetricName] = gauge(rtm.MSpanSys)
+	metrics[MCacheInuseMetricName] = gauge(rtm.MCacheInuse)
+	metrics[MCacheSysMetricName] = gauge(rtm.MCacheSys)
+	metrics[BuckHashSysMetricName] = gauge(rtm.BuckHashSys)
+	metrics[GCSysMetricName] = gauge(rtm.GCSys)
+	metrics[OtherSysMetricName] = gauge(rtm.OtherSys)
+	metrics[NextGCMetricName] = gauge(rtm.NextGC)
+	metrics[LastGCMetricName] = gauge(rtm.LastGC)
+	metrics[PauseTotalNsMetricName] = gauge(rtm.PauseTotalNs)
+	metrics[NumGCMetricName] = gauge(rtm.NumGC)
+	metrics[NumForcedGCMetricName] = gauge(rtm.NumForcedGC)
+	metrics[GCCPUFractionMetricName] = gauge(rtm.GCCPUFraction)
+	metrics[RandomValueMetricName] = gauge(rand.Float64())
 }
+
+const (
+	AllocMetricName         = "Alloc"
+	TotalAllocMetricName    = "TotalAlloc"
+	SysMetricName           = "Sys"
+	LookupsMetricName       = "Lookups"
+	MallocsMetricName       = "Mallocs"
+	FreesMetricName         = "Frees"
+	HeapAllocMetricName     = "HeapAlloc"
+	HeapSysMetricName       = "HeapSys"
+	HeapIdleMetricName      = "HeapIdle"
+	HeapInuseMetricName     = "HeapInuse"
+	HeapReleasedMetricName  = "HeapReleased"
+	HeapObjectsMetricName   = "HeapObjects"
+	StackInuseMetricName    = "StackInuse"
+	StackSysMetricName      = "StackSys"
+	MSpanInuseMetricName    = "MSpanInuse"
+	MSpanSysMetricName      = "MSpanSys"
+	MCacheInuseMetricName   = "MCacheInuse"
+	MCacheSysMetricName     = "MCacheSys"
+	BuckHashSysMetricName   = "BuckHashSys"
+	GCSysMetricName         = "GCSys"
+	OtherSysMetricName      = "OtherSys"
+	NextGCMetricName        = "NextGC"
+	LastGCMetricName        = "LastGC"
+	PauseTotalNsMetricName  = "PauseTotalNs"
+	NumGCMetricName         = "NumGC"
+	NumForcedGCMetricName   = "NumForcedGC"
+	GCCPUFractionMetricName = "GCCPUFraction"
+	RandomValueMetricName   = "RandomValue"
+	PollCountMetricName     = "PollCount"
+)

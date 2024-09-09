@@ -31,6 +31,6 @@ type ScalarMetric struct {
 	Datetime time.Time
 }
 
-func (s ScalarMetric) Time() time.Time {
+func (s ScalarMetric) GetDatetime() time.Time {
 	return s.Datetime
 }

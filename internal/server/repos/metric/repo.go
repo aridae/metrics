@@ -6,8 +6,8 @@ import (
 )
 
 type storage interface {
-	Save(_ context.Context, key tsstorage.Key, value tsstorage.Value)
-	GetLatest(_ context.Context, key tsstorage.Key) tsstorage.Value
+	Save(_ context.Context, key tsstorage.Key, value tsstorage.TimeseriesValue)
+	GetLatest(_ context.Context, key tsstorage.Key) tsstorage.TimeseriesValue
 }
 
 type Repository struct {

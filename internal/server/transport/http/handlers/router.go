@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"github.com/aridae/go-metrics-store/internal/server/usecases"
+	"context"
+	"github.com/aridae/go-metrics-store/internal/server/models"
 	"net/http"
 )
 
@@ -9,7 +10,11 @@ const (
 	urlPathUpdate = "/update/"
 )
 
-func NewRouter(useCasesController *usecases.Controller) *http.ServeMux {
+type useCasesController interface {
+	UpsertScalarMetric(ctx context.Context, updater models.ScalarMetricUpdater) error
+}
+
+func NewRouter(useCasesController useCasesController) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc(urlPathUpdate, getUpdateMetricByURLPathHandler(useCasesController))

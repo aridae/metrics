@@ -9,39 +9,39 @@ import (
 
 type Key string
 
-type Value interface {
-	Time() time.Time
+type TimeseriesValue interface {
+	GetDatetime() time.Time
 }
 
-type MemStorage struct {
+type MemTimeseriesStorage struct {
 	mu    sync.RWMutex
-	store map[Key][]Value
+	store map[Key][]TimeseriesValue
 }
 
-func New() *MemStorage {
-	return &MemStorage{
-		store: make(map[Key][]Value),
+func New() *MemTimeseriesStorage {
+	return &MemTimeseriesStorage{
+		store: make(map[Key][]TimeseriesValue),
 	}
 }
 
-func (inmem *MemStorage) Save(_ context.Context, key Key, value Value) {
-	inmem.mu.Lock()
-	defer inmem.mu.Unlock()
+func (mem *MemTimeseriesStorage) Save(_ context.Context, key Key, value TimeseriesValue) {
+	mem.mu.Lock()
+	defer mem.mu.Unlock()
 
-	inmem.store[key] = append(inmem.store[key], value)
+	mem.store[key] = append(mem.store[key], value)
 }
 
-func (inmem *MemStorage) GetLatest(_ context.Context, key Key) Value {
-	inmem.mu.RLock()
-	defer inmem.mu.RUnlock()
+func (mem *MemTimeseriesStorage) GetLatest(_ context.Context, key Key) TimeseriesValue {
+	mem.mu.RLock()
+	defer mem.mu.RUnlock()
 
-	timeseries, found := inmem.store[key]
+	timeseries, found := mem.store[key]
 	if !found || len(timeseries) == 0 {
 		return nil
 	}
 
 	sort.SliceStable(timeseries, func(i, j int) bool {
-		return timeseries[i].Time().Before(timeseries[j].Time())
+		return timeseries[i].GetDatetime().Before(timeseries[j].GetDatetime())
 	})
 
 	return timeseries[len(timeseries)-1]
