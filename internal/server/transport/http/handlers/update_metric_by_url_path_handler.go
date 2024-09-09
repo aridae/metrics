@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"fmt"
 	"github.com/aridae/go-metrics-store/internal/server/models"
 	"net/http"
@@ -21,8 +20,7 @@ const (
 
 func getUpdateMetricByURLPathHandler(useCasesController useCasesController) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithCancel(r.Context())
-		defer cancel()
+		ctx := r.Context()
 
 		if r.Method != http.MethodPost {
 			http.Error(w, "Only POST requests are allowed.", http.StatusMethodNotAllowed)
@@ -62,12 +60,12 @@ func buildMetricUpdaterFromURLPath(params []string) (models.ScalarMetricUpdater,
 
 	metricBuilderFn, ok := metricsConstructors[metricTypeURLParam]
 	if !ok {
-		return models.ScalarMetricUpdater{}, fmt.Errorf("unsupported metric type param: %s", metricTypeURLParam)
+		return models.ScalarMetricUpdater{}, fmt.Errorf("unsupported scalar-metric type param: %s", metricTypeURLParam)
 	}
 
 	metric, err := metricBuilderFn(metricNameURLParam, metricValueURLParam)
 	if err != nil {
-		return models.ScalarMetricUpdater{}, fmt.Errorf("failed to build metric <type:%s> from provided params: %w", metricTypeURLParam, err)
+		return models.ScalarMetricUpdater{}, fmt.Errorf("failed to build scalar-metric <type:%s> from provided params: %w", metricTypeURLParam, err)
 	}
 
 	return metric, nil

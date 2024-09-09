@@ -13,6 +13,6 @@ func (c *Controller) UpsertScalarMetric(ctx context.Context, updater models.Scal
 	case models.ScalarMetricTypeGauge:
 		return c.gaugeUseCasesHandler.Upsert(ctx, updater)
 	default:
-		return fmt.Errorf("unknown metric type: %v", updater.Type)
+		return fmt.Errorf("unknown scalar-metric type: %v", updater.Type)
 	}
 }

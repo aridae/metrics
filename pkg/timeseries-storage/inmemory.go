@@ -1,4 +1,4 @@
-package tsstorage
+package timeseriesstorage
 
 import (
 	"context"
@@ -28,21 +28,25 @@ func (mem *MemTimeseriesStorage) Save(_ context.Context, key Key, value Timeseri
 	mem.mu.Lock()
 	defer mem.mu.Unlock()
 
-	mem.store[key] = append(mem.store[key], value)
+	timeseries := mem.store[key]
+
+	timeseries = append(timeseries, value)
+
+	sort.SliceStable(timeseries, func(i, j int) bool {
+		return timeseries[i].GetDatetime().Before(timeseries[j].GetDatetime())
+	})
+
+	mem.store[key] = timeseries
 }
 
 func (mem *MemTimeseriesStorage) GetLatest(_ context.Context, key Key) TimeseriesValue {
 	mem.mu.RLock()
 	defer mem.mu.RUnlock()
 
-	timeseries, found := mem.store[key]
-	if !found || len(timeseries) == 0 {
+	timeseries := mem.store[key]
+	if len(timeseries) == 0 {
 		return nil
 	}
-
-	sort.SliceStable(timeseries, func(i, j int) bool {
-		return timeseries[i].GetDatetime().Before(timeseries[j].GetDatetime())
-	})
 
 	return timeseries[len(timeseries)-1]
 }
