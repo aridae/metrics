@@ -48,7 +48,7 @@ func TestHandler_Upsert_HappyCase_Increment(t *testing.T) {
 
 	_ = metricsRepo.GetLatestState
 	fixture.metricsRepo.EXPECT().
-		GetLatestState(ctx, metricUpdater.Type, metricUpdater.Name).
+		GetLatestState(ctx, metricUpdater.Key()).
 		Return(&expectedPrevState, nil)
 
 	_ = metricsRepo.Save
@@ -90,7 +90,7 @@ func TestHandler_Upsert_HappyCase_NoPrevValue(t *testing.T) {
 
 	_ = metricsRepo.GetLatestState
 	fixture.metricsRepo.EXPECT().
-		GetLatestState(ctx, metricUpdater.Type, metricUpdater.Name).
+		GetLatestState(ctx, metricUpdater.Key()).
 		Return(nil, nil)
 
 	_ = metricsRepo.Save

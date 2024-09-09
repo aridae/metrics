@@ -7,7 +7,7 @@ import (
 	tsstorage "github.com/aridae/go-metrics-store/pkg/timeseries-storage"
 )
 
-func (r *Repository) GetLatest(ctx context.Context, key models.MetricKey) (*models.ScalarMetric, error) {
+func (r *Repository) GetLatestState(ctx context.Context, key models.MetricKey) (*models.ScalarMetric, error) {
 	val := r.storage.GetLatest(ctx, tsstorage.Key(key.String()))
 	if val == nil {
 		return nil, nil
