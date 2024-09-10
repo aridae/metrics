@@ -2,6 +2,10 @@ package config
 
 import "sync"
 
+const (
+	_DEFAULT_ADDRESS = "localhost:8080"
+)
+
 type Config interface {
 	GetAddress() string
 }
@@ -22,17 +26,24 @@ func (c *config) GetAddress() string {
 func Obtain() Config {
 	once.Do(func() {
 		globalConfig = &config{}
-		globalConfig.initFromFlags()
+		globalConfig.init()
 	})
 
 	return globalConfig
 }
 
-func (c *config) initFromFlags() {
+func (c *config) init() {
+	// значения конфига по умолчанию
+	c.defaults()
+
 	// инициализация структуры конфига
 	// из значений, переданных через флаги
 	configValuesFromFlags := parseFlags().configSetters()
 	c.eval(configValuesFromFlags...)
+
+	// env, если есть, затирает флаги
+	configValuesFromEnv := readEnv().configSetters()
+	c.eval(configValuesFromEnv...)
 }
 
 func (c *config) isInit() bool {
@@ -45,4 +56,8 @@ func (c *config) eval(setters ...configSetter) {
 	for _, setter := range setters {
 		setter(c)
 	}
+}
+
+func (c *config) defaults() {
+	c.address = _DEFAULT_ADDRESS
 }

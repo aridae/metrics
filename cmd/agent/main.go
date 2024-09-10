@@ -9,7 +9,9 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
 	"runtime"
+	"strconv"
 	"time"
 )
 
@@ -25,22 +27,42 @@ const (
 )
 
 var (
-	pollInterval   *time.Duration
-	reportInterval *time.Duration
-	address        *string
+	pollInterval   int64
+	reportInterval int64
+	address        string
 )
 
 func init() {
-	reportInterval = flag.Duration("r", time.Second*10, "частота отправки метрик на сервер (по умолчанию 10 секунд)")
-	pollInterval = flag.Duration("p", time.Second*2, "частота опроса метрик из пакета runtime (по умолчанию 2 секунды)")
-	address = flag.String("a", "localhost:8080", "адрес эндпоинта HTTP-сервера (по умолчанию localhost:8080")
+	flag.Int64Var(&reportInterval, "r", 10, "частота отправки метрик на сервер (по умолчанию 10 секунд)")
+	flag.Int64Var(&pollInterval, "p", 2, "частота опроса метрик из пакета runtime (по умолчанию 2 секунды)")
+	flag.StringVar(&address, "a", "localhost:8080", "адрес эндпоинта HTTP-сервера (по умолчанию localhost:8080")
 }
 
 func main() {
 	flag.Parse()
 
-	pollTick := time.NewTicker(*pollInterval)
-	reportTick := time.NewTicker(*reportInterval)
+	if envAddress := os.Getenv("ADDRESS"); envAddress != "" {
+		address = envAddress
+	}
+
+	if envReportInterval := os.Getenv("REPORT_INTERVAL"); envReportInterval != "" {
+		parsedEnv, err := strconv.ParseInt(envReportInterval, 10, 64)
+		if err != nil {
+			log.Fatalf("invalid REPORT_INTERVAL environment variable, int64 value expected: %v", err)
+		}
+		reportInterval = parsedEnv
+	}
+
+	if envPollInterval := os.Getenv("POLL_INTERVAL"); envPollInterval != "" {
+		parsedEnv, err := strconv.ParseInt(envPollInterval, 10, 64)
+		if err != nil {
+			log.Fatalf("invalid POLL_INTERVAL environment variable, int64 value expected: %v", err)
+		}
+		reportInterval = parsedEnv
+	}
+
+	pollTick := time.NewTicker(time.Duration(pollInterval) * time.Second)
+	reportTick := time.NewTicker(time.Duration(reportInterval) * time.Second)
 
 	httpClient := &http.Client{}
 
@@ -70,7 +92,7 @@ func reportMetrics(client *http.Client, gaugeMetrics map[string]gauge, pollCount
 }
 
 func reportMetric(client *http.Client, metricURLPath string) {
-	serverURL, _ := url.JoinPath("http://"+*address, baseURLPath, metricURLPath)
+	serverURL, _ := url.JoinPath("http://"+address, baseURLPath, metricURLPath)
 
 	data := []byte("")
 	req, err := http.NewRequest(http.MethodPost, serverURL, bytes.NewBuffer(data))
