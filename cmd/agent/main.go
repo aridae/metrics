@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -12,22 +13,34 @@ import (
 	"time"
 )
 
+type (
+	counter int64
+	gauge   float64
+)
+
 const (
-	collectInterval = 2 * time.Second
-	reportInterval  = 10 * time.Second
-
-	baseEndpointURL = "http://localhost:8080/update"
-
+	baseURLPath         = "/update"
 	counterTypeURLParam = "counter"
 	gaugeTypeURLParam   = "gauge"
 )
 
-type gauge float64
-type counter int64
+var (
+	pollInterval   *time.Duration
+	reportInterval *time.Duration
+	address        *string
+)
+
+func init() {
+	reportInterval = flag.Duration("r", time.Second*10, "частота отправки метрик на сервер (по умолчанию 10 секунд)")
+	pollInterval = flag.Duration("p", time.Second*2, "частота опроса метрик из пакета runtime (по умолчанию 2 секунды)")
+	address = flag.String("a", "localhost:8080", "адрес эндпоинта HTTP-сервера (по умолчанию localhost:8080")
+}
 
 func main() {
-	collectTick := time.NewTicker(collectInterval)
-	reportTick := time.NewTicker(reportInterval)
+	flag.Parse()
+
+	pollTick := time.NewTicker(*pollInterval)
+	reportTick := time.NewTicker(*reportInterval)
 
 	httpClient := &http.Client{}
 
@@ -36,10 +49,10 @@ func main() {
 
 	for {
 		select {
-		case <-collectTick.C:
+		case <-pollTick.C:
 			log.Printf("starting metrics collection routine <now:%s>\n", time.Now().UTC())
 			pollCounter++
-			collectMetrics(gaugeMetrics)
+			pollMetrics(gaugeMetrics)
 		case <-reportTick.C:
 			log.Printf("starting metrics report routine <now:%s>\n", time.Now().UTC())
 			reportMetrics(httpClient, gaugeMetrics, pollCounter)
@@ -49,15 +62,15 @@ func main() {
 
 func reportMetrics(client *http.Client, gaugeMetrics map[string]gauge, pollCountMetric counter) {
 	for metricName, metricVal := range gaugeMetrics {
-		metric := fmt.Sprintf("/%s/%s/%v", gaugeTypeURLParam, metricName, metricVal)
-		reportMetric(client, metric)
+		metricURLPath := fmt.Sprintf("/%s/%s/%v", gaugeTypeURLParam, metricName, metricVal)
+		reportMetric(client, metricURLPath)
 	}
-	metric := fmt.Sprintf("/%s/%s/%v", counterTypeURLParam, PollCountMetricName, pollCountMetric)
-	reportMetric(client, metric)
+	metricURLPath := fmt.Sprintf("/%s/%s/%v", counterTypeURLParam, PollCountMetricName, pollCountMetric)
+	reportMetric(client, metricURLPath)
 }
 
-func reportMetric(client *http.Client, metric string) {
-	serverURL, _ := url.JoinPath(baseEndpointURL, metric)
+func reportMetric(client *http.Client, metricURLPath string) {
+	serverURL, _ := url.JoinPath("http://"+*address, baseURLPath, metricURLPath)
 
 	data := []byte("")
 	req, err := http.NewRequest(http.MethodPost, serverURL, bytes.NewBuffer(data))
@@ -84,7 +97,7 @@ func reportMetric(client *http.Client, metric string) {
 	}
 }
 
-func collectMetrics(metrics map[string]gauge) {
+func pollMetrics(metrics map[string]gauge) {
 	var rtm runtime.MemStats
 	runtime.ReadMemStats(&rtm)
 	metrics[AllocMetricName] = gauge(rtm.Alloc)
