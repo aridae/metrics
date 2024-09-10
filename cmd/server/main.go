@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/aridae/go-metrics-store/internal/server/config"
+	"flag"
 	"github.com/aridae/go-metrics-store/internal/server/repos/scalar-metric"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers"
@@ -13,11 +13,17 @@ import (
 	"log"
 )
 
-func main() {
-	ctx := context.Background()
-	cnf := config.ObtainFromFlags()
+var (
+	address string
+)
 
-	log.Println(cnf.GetAddress())
+func init() {
+	flag.StringVar(&address, "a", ":8080", "Address of server, default: localhost:8080")
+}
+
+func main() {
+	flag.Parse()
+	ctx := context.Background()
 
 	memStore := tsstorage.New()
 	metricsRepo := scalarmetric.NewRepository(memStore)
@@ -27,7 +33,7 @@ func main() {
 	useCaseController := usecases.NewController(metricsRepo, counterUseCases, gaugeUseCases)
 
 	httpRouter := handlers.NewRouter(useCaseController)
-	httpServer := http.NewServer(cnf.GetAddress(), httpRouter)
+	httpServer := http.NewServer(address, httpRouter)
 
 	if err := httpServer.Run(ctx); err != nil {
 		log.Fatalf("failed to start server: %v", err)
