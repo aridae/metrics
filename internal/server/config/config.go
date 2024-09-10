@@ -7,7 +7,7 @@ type Config interface {
 }
 
 var (
-	mu           sync.RWMutex
+	mu           sync.Mutex
 	globalConfig *config
 )
 
@@ -20,6 +20,9 @@ func (c *config) GetAddress() string {
 }
 
 func ObtainFromFlags() Config {
+	mu.Lock()
+	defer mu.Unlock()
+
 	if globalConfig.isInit() {
 		return globalConfig
 	}
@@ -31,9 +34,6 @@ func ObtainFromFlags() Config {
 }
 
 func (c *config) initFromFlags() {
-	mu.Lock()
-	defer mu.Unlock()
-
 	// инициализация структуры конфига
 	// из значений, переданных через флаги
 	configValuesFromFlags := parseFlags().configSetters()
@@ -41,9 +41,6 @@ func (c *config) initFromFlags() {
 }
 
 func (c *config) isInit() bool {
-	mu.RLock()
-	defer mu.RUnlock()
-
 	return globalConfig != nil
 }
 
