@@ -58,7 +58,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("invalid POLL_INTERVAL environment variable, int64 value expected: %v", err)
 		}
-		reportInterval = parsedEnv
+		pollInterval = parsedEnv
 	}
 
 	pollTick := time.NewTicker(time.Duration(pollInterval) * time.Second)
