@@ -25,7 +25,7 @@ func main() {
 	useCaseController := usecases.NewController(metricsRepo, counterUseCases, gaugeUseCases)
 
 	httpRouter := handlers.NewRouter(useCaseController)
-	httpServer := http.NewServer("http://"+cnf.GetAddress(), httpRouter)
+	httpServer := http.NewServer(cnf.GetAddress(), httpRouter)
 
 	if err := httpServer.Run(ctx); err != nil {
 		log.Fatalf("failed to start server: %v", err)
