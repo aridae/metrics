@@ -7,7 +7,7 @@ type Config interface {
 }
 
 var (
-	mu           sync.Mutex
+	once         sync.Once
 	globalConfig *config
 )
 
@@ -20,17 +20,12 @@ func (c *config) GetAddress() string {
 }
 
 func ObtainFromFlags() Config {
-	mu.Lock()
-	defer mu.Unlock()
+	once.Do(func() {
+		globalConfig = &config{}
+		globalConfig.initFromFlags()
+	})
 
-	if globalConfig.isInit() {
-		return globalConfig
-	}
-
-	conf := &config{}
-	conf.initFromFlags()
-
-	return conf
+	return globalConfig
 }
 
 func (c *config) initFromFlags() {
