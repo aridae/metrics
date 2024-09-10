@@ -22,16 +22,18 @@ func (c *config) GetAddress() string {
 func Obtain() Config {
 	once.Do(func() {
 		globalConfig = &config{}
-		globalConfig.initFromFlags()
+		globalConfig.init()
 	})
 
 	return globalConfig
 }
 
-func (c *config) initFromFlags() {
+func (c *config) init() {
 	// инициализация структуры конфига
 	// из значений, переданных через флаги
 	configValuesFromFlags := parseFlags().configSetters()
+
+	//configValueFromEnv
 	c.eval(configValuesFromFlags...)
 }
 

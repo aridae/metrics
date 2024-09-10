@@ -25,22 +25,22 @@ const (
 )
 
 var (
-	pollInterval   *time.Duration
-	reportInterval *time.Duration
+	pollInterval   *int64
+	reportInterval *int64
 	address        *string
 )
 
 func init() {
-	reportInterval = flag.Duration("r", time.Second*10, "частота отправки метрик на сервер (по умолчанию 10 секунд)")
-	pollInterval = flag.Duration("p", time.Second*2, "частота опроса метрик из пакета runtime (по умолчанию 2 секунды)")
+	reportInterval = flag.Int64("r", 10, "частота отправки метрик на сервер (по умолчанию 10 секунд)")
+	pollInterval = flag.Int64("p", 2, "частота опроса метрик из пакета runtime (по умолчанию 2 секунды)")
 	address = flag.String("a", "localhost:8080", "адрес эндпоинта HTTP-сервера (по умолчанию localhost:8080")
 }
 
 func main() {
 	flag.Parse()
 
-	pollTick := time.NewTicker(*pollInterval)
-	reportTick := time.NewTicker(*reportInterval)
+	pollTick := time.NewTicker(time.Second * time.Duration(*pollInterval))
+	reportTick := time.NewTicker(time.Second * time.Duration(*reportInterval))
 
 	httpClient := &http.Client{}
 
