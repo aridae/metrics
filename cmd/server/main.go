@@ -17,6 +17,8 @@ func main() {
 	ctx := context.Background()
 	cnf := config.ObtainFromFlags()
 
+	log.Println(cnf.GetAddress())
+
 	memStore := tsstorage.New()
 	metricsRepo := scalarmetric.NewRepository(memStore)
 
