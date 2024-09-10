@@ -3,7 +3,7 @@ package config
 import "sync"
 
 const (
-	_DEFAULT_ADDRESS = "localhost:8080"
+	defaultAddress = "localhost:8080"
 )
 
 type Config interface {
@@ -59,5 +59,5 @@ func (c *config) eval(setters ...configSetter) {
 }
 
 func (c *config) defaults() {
-	c.address = _DEFAULT_ADDRESS
+	c.address = defaultAddress
 }
