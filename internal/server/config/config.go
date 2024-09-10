@@ -19,7 +19,7 @@ func (c *config) GetAddress() string {
 	return c.address
 }
 
-func ObtainFromFlags() Config {
+func Obtain() Config {
 	once.Do(func() {
 		globalConfig = &config{}
 		globalConfig.initFromFlags()
