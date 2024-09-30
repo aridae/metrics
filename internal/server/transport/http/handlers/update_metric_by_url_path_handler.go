@@ -33,7 +33,7 @@ func (rt *Router) updateMetricByURLPathHandler(w http.ResponseWriter, r *http.Re
 	metricKey := metricFactory.CreateMetricKey(metricNameFromURL)
 	metricValue, err := metricFactory.ParseScalarMetricValue(metricValueFromURL)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	metricToRegister := metricFactory.CreateScalarMetricToRegister(metricKey, metricValue)
