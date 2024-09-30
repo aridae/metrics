@@ -7,7 +7,7 @@ import (
 
 type ControllerNoErrStub struct{}
 
-func (stub *ControllerNoErrStub) UpsertScalarMetric(_ context.Context, _ models.ScalarMetricUpdater) error {
+func (stub *ControllerNoErrStub) UpsertScalarMetric(_ context.Context, _ models.ScalarMetricToRegister) error {
 	return nil
 }
 

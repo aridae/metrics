@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	metricsupsertstrategies "github.com/aridae/go-metrics-store/internal/server/metrics-upsert-strategies"
 	"github.com/aridae/go-metrics-store/internal/server/models"
 	"github.com/go-chi/chi/v5"
 	"net/http"
@@ -24,7 +25,7 @@ var (
 )
 
 type useCasesController interface {
-	UpsertScalarMetric(ctx context.Context, updater models.ScalarMetricUpdater) error
+	UpsertScalarMetric(ctx context.Context, metricToRegister models.ScalarMetricToRegister, strategy metricsupsertstrategies.Strategy) error
 	GetScalarMetricLatestState(ctx context.Context, metricKey models.MetricKey) (*models.ScalarMetric, error)
 	GetAllScalarMetricsLatestStates(ctx context.Context) ([]models.ScalarMetric, error)
 }

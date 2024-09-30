@@ -10,7 +10,7 @@ import (
 type Key string
 
 type TimeseriesValue interface {
-	GetDatetime() time.Time
+	Datetime() time.Time
 }
 
 type MemTimeseriesStorage struct {
@@ -33,7 +33,7 @@ func (mem *MemTimeseriesStorage) Save(_ context.Context, key Key, value Timeseri
 	timeseries = append(timeseries, value)
 
 	sort.SliceStable(timeseries, func(i, j int) bool {
-		return timeseries[i].GetDatetime().Before(timeseries[j].GetDatetime())
+		return timeseries[i].Datetime().Before(timeseries[j].Datetime())
 	})
 
 	mem.store[key] = timeseries

@@ -7,8 +7,6 @@ import (
 	"github.com/aridae/go-metrics-store/internal/server/transport/http"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers"
 	"github.com/aridae/go-metrics-store/internal/server/usecases"
-	"github.com/aridae/go-metrics-store/internal/server/usecases/counter"
-	"github.com/aridae/go-metrics-store/internal/server/usecases/gauge"
 	tsstorage "github.com/aridae/go-metrics-store/pkg/timeseries-storage"
 	"log"
 )
@@ -18,13 +16,13 @@ func main() {
 	cnf := config.Obtain()
 
 	memStore := tsstorage.New()
+
 	metricsRepo := scalarmetric.NewRepository(memStore)
 
-	counterUseCases := counter.NewHandler(metricsRepo)
-	gaugeUseCases := gauge.NewHandler(metricsRepo)
-	useCaseController := usecases.NewController(metricsRepo, counterUseCases, gaugeUseCases)
+	useCaseController := usecases.NewController(metricsRepo)
 
 	httpRouter := handlers.NewRouter(useCaseController)
+
 	httpServer := http.NewServer(cnf.GetAddress(), httpRouter)
 
 	if err := httpServer.Run(ctx); err != nil {

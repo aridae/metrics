@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/aridae/go-metrics-store/internal/server/models"
 	"github.com/go-chi/chi/v5"
 	"net/http"
 )
@@ -14,13 +13,15 @@ func (rt *Router) getMetricByURLPathHandler(w http.ResponseWriter, r *http.Reque
 	}
 	ctx := r.Context()
 
-	metricName := chi.URLParam(r, urlParamMetricName)
-	metricType, err := mapAPIToDomainScalarMetricType(chi.URLParam(r, urlParamMetricType))
+	metricTypeFromURL := chi.URLParam(r, urlParamMetricType)
+	metricNameFromURL := chi.URLParam(r, urlParamMetricName)
+
+	metricFactory, err := resolveMetricFactoryFromURLPath(metricTypeFromURL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	metricKey := models.BuildMetricKey(metricType, metricName)
+	metricKey := metricFactory.CreateMetricKey(metricNameFromURL)
 
 	latestState, err := rt.useCasesController.GetScalarMetricLatestState(ctx, metricKey)
 	if err != nil {
@@ -28,12 +29,11 @@ func (rt *Router) getMetricByURLPathHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	if latestState == nil {
-		http.Error(w, fmt.Sprintf("Metric %s:%s not registered yet.", metricType, metricName), http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("Metric %s not registered yet.", metricKey), http.StatusNotFound)
 		return
 	}
-	metricValueStr := fmt.Sprintf("%v", latestState.Value)
 
-	_, err = w.Write([]byte(metricValueStr))
+	_, err = w.Write([]byte(latestState.Value().String()))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -41,15 +41,4 @@ func (rt *Router) getMetricByURLPathHandler(w http.ResponseWriter, r *http.Reque
 
 	w.Header().Set("content-type", "text/plain")
 	w.WriteHeader(http.StatusOK)
-}
-
-func mapAPIToDomainScalarMetricType(apiT string) (models.ScalarMetricType, error) {
-	switch apiT {
-	case counterURLParam:
-		return models.ScalarMetricTypeCounter, nil
-	case gaugeURLParam:
-		return models.ScalarMetricTypeGauge, nil
-	default:
-		return "", fmt.Errorf("unknown scalar metrics type: %s", apiT)
-	}
 }
