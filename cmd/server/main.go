@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/aridae/go-metrics-store/internal/server/config"
+	"github.com/aridae/go-metrics-store/internal/server/mw"
 	"github.com/aridae/go-metrics-store/internal/server/repos/scalar-metric"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers"
@@ -23,7 +24,9 @@ func main() {
 
 	httpRouter := handlers.NewRouter(useCaseController)
 
-	httpServer := http.NewServer(cnf.GetAddress(), httpRouter)
+	httpServer := http.NewServer(cnf.GetAddress(), httpRouter,
+		mw.LoggingMiddleware,
+	)
 
 	if err := httpServer.Run(ctx); err != nil {
 		log.Fatalf("failed to start server: %v", err)

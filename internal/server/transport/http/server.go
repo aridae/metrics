@@ -11,7 +11,11 @@ type Server struct {
 	server  *http.Server
 }
 
-func NewServer(address string, mux http.Handler) *Server {
+func NewServer(address string, mux http.Handler, mws ...func(http.Handler) http.Handler) *Server {
+	for _, mw := range mws {
+		mux = mw(mux)
+	}
+
 	server := &http.Server{
 		Addr:    address,
 		Handler: mux,
