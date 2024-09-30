@@ -17,6 +17,23 @@ func (f *counterMetricFactory) CreateMetricKey(metricName string) models.MetricK
 	return models.MetricKey(models.ScalarMetricTypeCounter.String() + ":" + metricName)
 }
 
+func (f *counterMetricFactory) CastScalarMetricValue(v any) (models.ScalarMetricValue, error) {
+	switch value := v.(type) {
+	case int64:
+		return models.NewInt64MetricValue(value), nil
+	case int32:
+		return models.NewInt64MetricValue(int64(value)), nil
+	case int:
+		return models.NewInt64MetricValue(int64(value)), nil
+	case int16:
+		return models.NewInt64MetricValue(int64(value)), nil
+	case int8:
+		return models.NewInt64MetricValue(int64(value)), nil
+	default:
+		return nil, fmt.Errorf("can't cast to int numeric safely, unsupported scalar value type: %T", value)
+	}
+}
+
 func (f *counterMetricFactory) ParseScalarMetricValue(v string) (models.ScalarMetricValue, error) {
 	int64Val, err := strconv.ParseInt(v, 10, 64)
 	if err != nil {

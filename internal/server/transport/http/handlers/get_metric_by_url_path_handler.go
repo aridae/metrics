@@ -16,7 +16,7 @@ func (rt *Router) getMetricByURLPathHandler(w http.ResponseWriter, r *http.Reque
 	metricTypeFromURL := chi.URLParam(r, urlParamMetricType)
 	metricNameFromURL := chi.URLParam(r, urlParamMetricName)
 
-	metricFactory, err := resolveMetricFactoryFromURLPath(metricTypeFromURL)
+	metricFactory, err := resolveMetricFactoryForMetricType(metricTypeFromURL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

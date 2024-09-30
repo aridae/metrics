@@ -26,6 +26,27 @@ func (f *gaugeMetricFactory) ParseScalarMetricValue(v string) (models.ScalarMetr
 	return models.NewFloat64MetricValue(float64Val), nil
 }
 
+func (f *gaugeMetricFactory) CastScalarMetricValue(v any) (models.ScalarMetricValue, error) {
+	switch value := v.(type) {
+	case float64:
+		return models.NewFloat64MetricValue(value), nil
+	case float32:
+		return models.NewFloat64MetricValue(float64(value)), nil
+	case int64:
+		return models.NewFloat64MetricValue(float64(value)), nil
+	case int32:
+		return models.NewFloat64MetricValue(float64(value)), nil
+	case int:
+		return models.NewFloat64MetricValue(float64(value)), nil
+	case int16:
+		return models.NewFloat64MetricValue(float64(value)), nil
+	case int8:
+		return models.NewFloat64MetricValue(float64(value)), nil
+	default:
+		return nil, fmt.Errorf("can't cast to float numeric safely, unsupported scalar value type: %T", value)
+	}
+}
+
 func (f *gaugeMetricFactory) CreateScalarMetricToRegister(key models.MetricKey, val models.ScalarMetricValue) models.ScalarMetricToRegister {
 	return models.NewScalarMetricToRegister(key, val, models.ScalarMetricTypeGauge)
 }

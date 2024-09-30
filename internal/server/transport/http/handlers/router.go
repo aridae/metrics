@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	metricsfabrics "github.com/aridae/go-metrics-store/internal/server/metrics-fabrics"
 	metricsupsertstrategies "github.com/aridae/go-metrics-store/internal/server/metrics-upsert-strategies"
 	"github.com/aridae/go-metrics-store/internal/server/models"
 	"github.com/go-chi/chi/v5"
@@ -14,14 +15,15 @@ const (
 	urlParamMetricName  = "metric_name"
 	urlParamMetricValue = "metric_value"
 
-	counterURLParam = "counter"
-	gaugeURLParam   = "gauge"
+	counter = "counter"
+	gauge   = "gauge"
 )
 
 var (
-	updateMetricValueURLPath  = fmt.Sprintf("/update/{%s}/{%s}/{%s}", urlParamMetricType, urlParamMetricName, urlParamMetricValue)
-	getMetricValueURLPath     = fmt.Sprintf("/value/{%s}/{%s}", urlParamMetricType, urlParamMetricName)
-	getAllMetricValuesURLPath = "/"
+	updateMetricWithJSONBodyURLPath       = fmt.Sprintf("/update")
+	updateMetricWithURLParamsValueURLPath = fmt.Sprintf("/update/{%s}/{%s}/{%s}", urlParamMetricType, urlParamMetricName, urlParamMetricValue)
+	getMetricValueURLPath                 = fmt.Sprintf("/value/{%s}/{%s}", urlParamMetricType, urlParamMetricName)
+	getAllMetricValuesURLPath             = "/"
 )
 
 type useCasesController interface {
@@ -43,7 +45,8 @@ func NewRouter(useCasesController useCasesController) *Router {
 		httpMux:            chiMux,
 	}
 
-	chiMux.HandleFunc(updateMetricValueURLPath, router.updateMetricByURLPathHandler)
+	chiMux.HandleFunc(updateMetricWithJSONBodyURLPath, router.updateMetricJSONHandler)
+	chiMux.HandleFunc(updateMetricWithURLParamsValueURLPath, router.updateMetricByURLPathHandler)
 	chiMux.HandleFunc(getMetricValueURLPath, router.getMetricByURLPathHandler)
 	chiMux.HandleFunc(getAllMetricValuesURLPath, router.getAllMetricsHTMLHandler)
 
@@ -52,4 +55,15 @@ func NewRouter(useCasesController useCasesController) *Router {
 
 func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rt.httpMux.ServeHTTP(w, r)
+}
+
+func resolveMetricFactoryForMetricType(metricType string) (metricsfabrics.ScalarMetricFactory, error) {
+	switch metricType {
+	case counter:
+		return metricsfabrics.NewCounterMetricFactory(), nil
+	case gauge:
+		return metricsfabrics.NewGaugeMetricFactory(), nil
+	default:
+		return nil, fmt.Errorf("unknown metric type: %s", metricType)
+	}
 }

@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"fmt"
-	metricsfabrics "github.com/aridae/go-metrics-store/internal/server/metrics-fabrics"
 	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strings"
@@ -24,7 +22,7 @@ func (rt *Router) updateMetricByURLPathHandler(w http.ResponseWriter, r *http.Re
 	metricNameFromURL := chi.URLParam(r, urlParamMetricName)
 	metricValueFromURL := chi.URLParam(r, urlParamMetricValue)
 
-	metricFactory, err := resolveMetricFactoryFromURLPath(metricTypeFromURL)
+	metricFactory, err := resolveMetricFactoryForMetricType(metricTypeFromURL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -47,15 +45,4 @@ func (rt *Router) updateMetricByURLPathHandler(w http.ResponseWriter, r *http.Re
 	}
 
 	w.WriteHeader(http.StatusOK)
-}
-
-func resolveMetricFactoryFromURLPath(metricType string) (metricsfabrics.ScalarMetricFactory, error) {
-	switch metricType {
-	case counterURLParam:
-		return metricsfabrics.NewCounterMetricFactory(), nil
-	case gaugeURLParam:
-		return metricsfabrics.NewGaugeMetricFactory(), nil
-	default:
-		return nil, fmt.Errorf("unknown metric type: %s", metricType)
-	}
 }

@@ -2,8 +2,10 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
+	httpmodels "github.com/aridae/go-metrics-store/internal/server/transport/http/models"
 	"io"
 	"log"
 	"math/rand"
@@ -21,21 +23,23 @@ type (
 )
 
 const (
-	baseURLPath         = "/update"
-	counterTypeURLParam = "counter"
-	gaugeTypeURLParam   = "gauge"
+	baseURLPath = "/update"
+	counterType = "counter"
+	gaugeType   = "gauge"
 )
 
 var (
 	pollInterval   int64
 	reportInterval int64
 	address        string
+	useOldHandler  bool
 )
 
 func init() {
 	flag.Int64Var(&reportInterval, "r", 10, "частота отправки метрик на сервер (по умолчанию 10 секунд)")
 	flag.Int64Var(&pollInterval, "p", 2, "частота опроса метрик из пакета runtime (по умолчанию 2 секунды)")
 	flag.StringVar(&address, "a", "localhost:8080", "адрес эндпоинта HTTP-сервера (по умолчанию localhost:8080")
+	flag.BoolVar(&useOldHandler, "o", false, "Использовать старый эндпоинт [/update/<type>/<name>/<value>] для сохранения метрики (по умолчанию false)")
 }
 
 func main() {
@@ -84,18 +88,47 @@ func main() {
 
 func reportMetrics(client *http.Client, gaugeMetrics map[string]gauge, pollCountMetric counter) {
 	for metricName, metricVal := range gaugeMetrics {
-		metricURLPath := fmt.Sprintf("/%s/%s/%v", gaugeTypeURLParam, metricName, metricVal)
-		reportMetric(client, metricURLPath)
+		reportMetric(client, gaugeType, metricName, metricVal)
 	}
-	metricURLPath := fmt.Sprintf("/%s/%s/%v", counterTypeURLParam, PollCountMetricName, pollCountMetric)
-	reportMetric(client, metricURLPath)
+	reportMetric(client, counterType, PollCountMetricName, pollCountMetric)
 }
 
-func reportMetric(client *http.Client, metricURLPath string) {
+func reportMetric(client *http.Client, metricType, metricName string, metricVal any) {
+	if useOldHandler {
+		reportMetricWithURLPath(client, metricType, metricName, metricVal)
+		return
+	}
+
+	reportMetricWithJSONPayload(client, metricType, metricName, metricVal)
+}
+
+func reportMetricWithJSONPayload(client *http.Client, metricType, metricName string, metricVal any) {
+	serverURL, _ := url.JoinPath("http://"+address, baseURLPath)
+
+	jsonPayload, err := buildMetricJSONPayload(metricType, metricName, metricVal)
+	if err != nil {
+		log.Fatalf("failed to build metric json-serializable struct: %v", err)
+	}
+
+	body := new(bytes.Buffer)
+	err = json.NewEncoder(body).Encode(jsonPayload)
+	if err != nil {
+		log.Fatalf("failed to encode metric json-serializable struct: %v", err)
+	}
+
+	mustDoRequest(client, http.MethodPost, serverURL, body)
+}
+
+func reportMetricWithURLPath(client *http.Client, metricType, metricName string, metricVal any) {
+	metricURLPath := fmt.Sprintf("/%s/%s/%v", metricType, metricName, metricVal)
+
 	serverURL, _ := url.JoinPath("http://"+address, baseURLPath, metricURLPath)
 
-	data := []byte("")
-	req, err := http.NewRequest(http.MethodPost, serverURL, bytes.NewBuffer(data))
+	mustDoRequest(client, http.MethodPost, serverURL, &bytes.Buffer{})
+}
+
+func mustDoRequest(client *http.Client, method string, url string, body io.Reader) {
+	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		log.Fatalf("failed to build http request: %v", err)
 	}
@@ -150,6 +183,39 @@ func pollMetrics(metrics map[string]gauge) {
 	metrics[NumForcedGCMetricName] = gauge(rtm.NumForcedGC)
 	metrics[GCCPUFractionMetricName] = gauge(rtm.GCCPUFraction)
 	metrics[RandomValueMetricName] = gauge(rand.Float64())
+}
+
+func buildMetricJSONPayload(
+	mtype string,
+	name string,
+	val any,
+) (httpmodels.MetricUpsert, error) {
+	switch mtype {
+	case counterType:
+		counterVal, ok := val.(counter)
+		if !ok {
+			return httpmodels.MetricUpsert{}, fmt.Errorf("value is not int64")
+		}
+		int64Val := int64(counterVal)
+		return httpmodels.MetricUpsert{
+			ID:    name,
+			MType: mtype,
+			Delta: &int64Val,
+		}, nil
+	case gaugeType:
+		gaugeVal, ok := val.(gauge)
+		if !ok {
+			return httpmodels.MetricUpsert{}, fmt.Errorf("value is not float64")
+		}
+		float64Val := float64(gaugeVal)
+		return httpmodels.MetricUpsert{
+			ID:    name,
+			MType: mtype,
+			Value: &float64Val,
+		}, nil
+	default:
+		return httpmodels.MetricUpsert{}, fmt.Errorf("unsupported metric type: %s", mtype)
+	}
 }
 
 const (
