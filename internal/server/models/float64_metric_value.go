@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"strconv"
 )
 
 type float64MetricValue struct {
@@ -13,7 +14,7 @@ func NewFloat64MetricValue(val float64) ScalarMetricValue {
 }
 
 func (mv float64MetricValue) String() string {
-	return fmt.Sprintf("%f", mv.val)
+	return strconv.FormatFloat(mv.val, 'f', -1, 64)
 }
 
 func (mv float64MetricValue) Inc(v ScalarMetricValue) (ScalarMetricValue, error) {
