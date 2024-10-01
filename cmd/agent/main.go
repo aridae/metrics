@@ -36,10 +36,10 @@ var (
 )
 
 func init() {
-	flag.Int64Var(&reportInterval, "r", 10, "частота отправки метрик на сервер (по умолчанию 10 секунд)")
-	flag.Int64Var(&pollInterval, "p", 2, "частота опроса метрик из пакета runtime (по умолчанию 2 секунды)")
+	flag.Int64Var(&reportInterval, "r", 2, "частота отправки метрик на сервер (по умолчанию 10 секунд)")
+	flag.Int64Var(&pollInterval, "p", 1, "частота опроса метрик из пакета runtime (по умолчанию 2 секунды)")
 	flag.StringVar(&address, "a", "localhost:8080", "адрес эндпоинта HTTP-сервера (по умолчанию localhost:8080")
-	flag.BoolVar(&useOldHandler, "o", true, "Использовать старый эндпоинт [/update/<type>/<name>/<value>] для сохранения метрики (по умолчанию false)")
+	flag.BoolVar(&useOldHandler, "o", false, "Использовать старый эндпоинт [/update/<type>/<name>/<value>] для сохранения метрики (по умолчанию false)")
 }
 
 func main() {
@@ -110,13 +110,13 @@ func reportMetricWithJSONPayload(client *http.Client, metricType, metricName str
 		log.Fatalf("failed to build metric json-serializable struct: %v", err)
 	}
 
-	body := new(bytes.Buffer)
-	err = json.NewEncoder(body).Encode(jsonPayload)
+	requestBody := new(bytes.Buffer)
+	err = json.NewEncoder(requestBody).Encode(jsonPayload)
 	if err != nil {
 		log.Fatalf("failed to encode metric json-serializable struct: %v", err)
 	}
 
-	mustDoRequest(client, http.MethodPost, serverURL, body, "application/json")
+	mustDoRequest(client, http.MethodPost, serverURL, requestBody, "application/json")
 }
 
 func reportMetricWithURLPath(client *http.Client, metricType, metricName string, metricVal any) {
@@ -146,7 +146,7 @@ func mustDoRequest(client *http.Client, method string, url string, body io.Reade
 		}
 	}()
 
-	_, err = io.Copy(io.Discard, resp.Body)
+	_, err = io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalf("failed to read body: %v", err)
 	}
