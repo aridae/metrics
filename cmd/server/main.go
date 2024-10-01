@@ -25,8 +25,8 @@ func main() {
 	httpRouter := handlers.NewRouter(useCaseController)
 
 	httpServer := http.NewServer(cnf.GetAddress(), httpRouter,
-		mw.LoggingMiddleware,
 		mw.TrimTrailingSlash,
+		mw.LoggingMiddleware,
 	)
 
 	if err := httpServer.Run(ctx); err != nil {
