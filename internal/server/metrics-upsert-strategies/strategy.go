@@ -12,5 +12,5 @@ type metricsRepo interface {
 }
 
 type Strategy interface {
-	Upsert(ctx context.Context, metricsRepo metricsRepo, metricToRegister models.ScalarMetricToRegister, now time.Time) error
+	Upsert(ctx context.Context, metricsRepo metricsRepo, metricToRegister models.ScalarMetricToRegister, now time.Time) (models.ScalarMetric, error)
 }

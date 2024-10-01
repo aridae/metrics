@@ -20,14 +20,15 @@ const (
 )
 
 var (
-	updateMetricWithJSONBodyURLPath       = fmt.Sprintf("/update")
+	updateMetricWithJSONBodyURLPath       = "/update"
+	getMetricWithJSONBodyURLPath          = "/value"
 	updateMetricWithURLParamsValueURLPath = fmt.Sprintf("/update/{%s}/{%s}/{%s}", urlParamMetricType, urlParamMetricName, urlParamMetricValue)
 	getMetricValueURLPath                 = fmt.Sprintf("/value/{%s}/{%s}", urlParamMetricType, urlParamMetricName)
 	getAllMetricValuesURLPath             = "/"
 )
 
 type useCasesController interface {
-	UpsertScalarMetric(ctx context.Context, metricToRegister models.ScalarMetricToRegister, strategy metricsupsertstrategies.Strategy) error
+	UpsertScalarMetric(ctx context.Context, metricToRegister models.ScalarMetricToRegister, strategy metricsupsertstrategies.Strategy) (models.ScalarMetric, error)
 	GetScalarMetricLatestState(ctx context.Context, metricKey models.MetricKey) (*models.ScalarMetric, error)
 	GetAllScalarMetricsLatestStates(ctx context.Context) ([]models.ScalarMetric, error)
 }
@@ -46,6 +47,7 @@ func NewRouter(useCasesController useCasesController) *Router {
 	}
 
 	chiMux.HandleFunc(updateMetricWithJSONBodyURLPath, router.updateMetricJSONHandler)
+	chiMux.HandleFunc(getMetricWithJSONBodyURLPath, router.getMetricJSONHandler)
 	chiMux.HandleFunc(updateMetricWithURLParamsValueURLPath, router.updateMetricByURLPathHandler)
 	chiMux.HandleFunc(getMetricValueURLPath, router.getMetricByURLPathHandler)
 	chiMux.HandleFunc(getAllMetricValuesURLPath, router.getAllMetricsHTMLHandler)

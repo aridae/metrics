@@ -9,6 +9,6 @@ type ScalarMetricFactory interface {
 	CreateMetricKey(metricName string) models.MetricKey
 	CastScalarMetricValue(v any) (models.ScalarMetricValue, error)
 	ParseScalarMetricValue(v string) (models.ScalarMetricValue, error)
-	CreateScalarMetricToRegister(key models.MetricKey, val models.ScalarMetricValue) models.ScalarMetricToRegister
+	CreateScalarMetricToRegister(name string, val models.ScalarMetricValue) models.ScalarMetricToRegister
 	ProvideUpsertStrategy() metricsupsertstrategies.Strategy
 }

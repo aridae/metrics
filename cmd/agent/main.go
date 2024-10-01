@@ -189,15 +189,15 @@ func buildMetricJSONPayload(
 	mtype string,
 	name string,
 	val any,
-) (httpmodels.MetricUpsert, error) {
+) (httpmodels.Metric, error) {
 	switch mtype {
 	case counterType:
 		counterVal, ok := val.(counter)
 		if !ok {
-			return httpmodels.MetricUpsert{}, fmt.Errorf("value is not int64")
+			return httpmodels.Metric{}, fmt.Errorf("value is not int64")
 		}
 		int64Val := int64(counterVal)
-		return httpmodels.MetricUpsert{
+		return httpmodels.Metric{
 			ID:    name,
 			MType: mtype,
 			Delta: &int64Val,
@@ -205,16 +205,16 @@ func buildMetricJSONPayload(
 	case gaugeType:
 		gaugeVal, ok := val.(gauge)
 		if !ok {
-			return httpmodels.MetricUpsert{}, fmt.Errorf("value is not float64")
+			return httpmodels.Metric{}, fmt.Errorf("value is not float64")
 		}
 		float64Val := float64(gaugeVal)
-		return httpmodels.MetricUpsert{
+		return httpmodels.Metric{
 			ID:    name,
 			MType: mtype,
 			Value: &float64Val,
 		}, nil
 	default:
-		return httpmodels.MetricUpsert{}, fmt.Errorf("unsupported metric type: %s", mtype)
+		return httpmodels.Metric{}, fmt.Errorf("unsupported metric type: %s", mtype)
 	}
 }
 

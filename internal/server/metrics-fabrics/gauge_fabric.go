@@ -13,8 +13,8 @@ func NewGaugeMetricFactory() ScalarMetricFactory {
 	return &gaugeMetricFactory{}
 }
 
-func (f *gaugeMetricFactory) CreateMetricKey(metricName string) models.MetricKey {
-	return models.MetricKey("gauge:" + metricName)
+func (f *gaugeMetricFactory) CreateMetricKey(name string) models.MetricKey {
+	return models.BuildMetricKey(name, models.ScalarMetricTypeGauge)
 }
 
 func (f *gaugeMetricFactory) ParseScalarMetricValue(v string) (models.ScalarMetricValue, error) {
@@ -47,8 +47,8 @@ func (f *gaugeMetricFactory) CastScalarMetricValue(v any) (models.ScalarMetricVa
 	}
 }
 
-func (f *gaugeMetricFactory) CreateScalarMetricToRegister(key models.MetricKey, val models.ScalarMetricValue) models.ScalarMetricToRegister {
-	return models.NewScalarMetricToRegister(key, val, models.ScalarMetricTypeGauge)
+func (f *gaugeMetricFactory) CreateScalarMetricToRegister(name string, val models.ScalarMetricValue) models.ScalarMetricToRegister {
+	return models.NewScalarMetricToRegister(name, val, models.ScalarMetricTypeGauge)
 }
 
 func (f *gaugeMetricFactory) ProvideUpsertStrategy() metricsupsertstrategies.Strategy {

@@ -2,50 +2,49 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	httpmodels "github.com/aridae/go-metrics-store/internal/server/transport/http/models"
 	"net/http"
 )
 
-func (rt *Router) updateMetricJSONHandler(w http.ResponseWriter, r *http.Request) {
+func (rt *Router) getMetricJSONHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Only POST requests are allowed.", http.StatusMethodNotAllowed)
 		return
 	}
 
 	ctx := r.Context()
-	transportMetric := httpmodels.Metric{}
-	err := json.NewDecoder(r.Body).Decode(&transportMetric)
+	transportMetricRequest := httpmodels.MetricRequest{}
+	err := json.NewDecoder(r.Body).Decode(&transportMetricRequest)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	metricFactory, err := resolveMetricFactoryForMetricType(transportMetric.MType)
+	metricFactory, err := resolveMetricFactoryForMetricType(transportMetricRequest.MType)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	metricKey := metricFactory.CreateMetricKey(transportMetricRequest.ID)
 
-	metric, err := buildMetricDomainModel(transportMetric, metricFactory)
+	metric, err := rt.useCasesController.GetScalarMetricLatestState(ctx, metricKey)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	metricUpsertStrategy := metricFactory.ProvideUpsertStrategy()
+	if metric == nil {
+		http.Error(w, fmt.Sprintf("Metric %s not registered yet.", metricKey), http.StatusNotFound)
+		return
+	}
 
-	newMetricState, err := rt.useCasesController.UpsertScalarMetric(ctx, metric, metricUpsertStrategy)
+	transportMetric, err := buildMetricTransportModel(*metric)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	transportMetricAfterUpsert, err := buildMetricTransportModel(newMetricState)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	err = json.NewEncoder(w).Encode(transportMetricAfterUpsert)
+	err = json.NewEncoder(w).Encode(transportMetric)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

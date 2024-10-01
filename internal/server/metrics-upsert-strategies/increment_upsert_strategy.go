@@ -13,27 +13,32 @@ func NewIncrementUpsertStrategy() Strategy {
 	return &incrementUpsertStrategy{}
 }
 
-func (s *incrementUpsertStrategy) Upsert(ctx context.Context, metricsRepo metricsRepo, metricToRegister models.ScalarMetricToRegister, now time.Time) error {
+func (s *incrementUpsertStrategy) Upsert(
+	ctx context.Context,
+	metricsRepo metricsRepo,
+	metricToRegister models.ScalarMetricToRegister,
+	now time.Time,
+) (models.ScalarMetric, error) {
 	// начать транзакцию, которой у меня нет в имитации хранилки в мапке, но будет в постгре
 
 	prevMetricState, err := metricsRepo.GetLatestState(ctx, metricToRegister.Key())
 	if err != nil {
-		return fmt.Errorf("metricsRepo.GetScalarMetricLatestState <metricKey:%s>: %w", metricToRegister.Key(), err)
+		return models.ScalarMetric{}, fmt.Errorf("metricsRepo.GetScalarMetricLatestState <metricKey:%s>: %w", metricToRegister.Key(), err)
 	}
 
-	newCounter, err := increment(prevMetricState, metricToRegister, now)
+	newMetricState, err := increment(prevMetricState, metricToRegister, now)
 	if err != nil {
-		return fmt.Errorf("increment <metricKey:%s>, failed to build new metric state: %w", metricToRegister.Key(), err)
+		return models.ScalarMetric{}, fmt.Errorf("increment <metricKey:%s>, failed to build new metric state: %w", metricToRegister.Key(), err)
 	}
 
-	err = metricsRepo.Save(ctx, newCounter)
+	err = metricsRepo.Save(ctx, newMetricState)
 	if err != nil {
-		return fmt.Errorf("metricsRepo.Save <metricKey:%s>: %w", metricToRegister.Key(), err)
+		return models.ScalarMetric{}, fmt.Errorf("metricsRepo.Save <metricKey:%s>: %w", metricToRegister.Key(), err)
 	}
 
 	// завершить транзакцию, которой у меня нет в имитации хранилки в мапке, но будет в постгре
 
-	return nil
+	return newMetricState, nil
 }
 
 func increment(

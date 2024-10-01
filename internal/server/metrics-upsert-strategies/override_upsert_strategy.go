@@ -13,13 +13,18 @@ func NewOverrideUpsertStrategy() Strategy {
 	return &overrideUpsertStrategy{}
 }
 
-func (s *overrideUpsertStrategy) Upsert(ctx context.Context, metricsRepo metricsRepo, metricToRegister models.ScalarMetricToRegister, now time.Time) error {
+func (s *overrideUpsertStrategy) Upsert(
+	ctx context.Context,
+	metricsRepo metricsRepo,
+	metricToRegister models.ScalarMetricToRegister,
+	now time.Time,
+) (models.ScalarMetric, error) {
 	newMetricState := metricToRegister.AtDatetime(now)
 
 	err := metricsRepo.Save(ctx, newMetricState)
 	if err != nil {
-		return fmt.Errorf("metricsRepo.Save: %w", err)
+		return models.ScalarMetric{}, fmt.Errorf("metricsRepo.Save: %w", err)
 	}
 
-	return nil
+	return newMetricState, nil
 }

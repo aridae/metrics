@@ -14,7 +14,7 @@ func NewCounterMetricFactory() ScalarMetricFactory {
 }
 
 func (f *counterMetricFactory) CreateMetricKey(metricName string) models.MetricKey {
-	return models.MetricKey(models.ScalarMetricTypeCounter.String() + ":" + metricName)
+	return models.BuildMetricKey(metricName, models.ScalarMetricTypeCounter)
 }
 
 func (f *counterMetricFactory) CastScalarMetricValue(v any) (models.ScalarMetricValue, error) {
@@ -43,8 +43,8 @@ func (f *counterMetricFactory) ParseScalarMetricValue(v string) (models.ScalarMe
 	return models.NewInt64MetricValue(int64Val), nil
 }
 
-func (f *counterMetricFactory) CreateScalarMetricToRegister(key models.MetricKey, val models.ScalarMetricValue) models.ScalarMetricToRegister {
-	return models.NewScalarMetricToRegister(key, val, models.ScalarMetricTypeCounter)
+func (f *counterMetricFactory) CreateScalarMetricToRegister(name string, val models.ScalarMetricValue) models.ScalarMetricToRegister {
+	return models.NewScalarMetricToRegister(name, val, models.ScalarMetricTypeCounter)
 }
 
 func (f *counterMetricFactory) ProvideUpsertStrategy() metricsupsertstrategies.Strategy {

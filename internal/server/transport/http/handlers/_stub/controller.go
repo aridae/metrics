@@ -8,8 +8,8 @@ import (
 
 type ControllerNoErrStub struct{}
 
-func (stub *ControllerNoErrStub) UpsertScalarMetric(ctx context.Context, metricToRegister models.ScalarMetricToRegister, strategy metricsupsertstrategies.Strategy) error {
-	return nil
+func (stub *ControllerNoErrStub) UpsertScalarMetric(ctx context.Context, metricToRegister models.ScalarMetricToRegister, strategy metricsupsertstrategies.Strategy) (models.ScalarMetric, error) {
+	return models.ScalarMetric{}, nil
 }
 
 func (stub *ControllerNoErrStub) GetScalarMetricLatestState(ctx context.Context, metricKey models.MetricKey) (*models.ScalarMetric, error) {

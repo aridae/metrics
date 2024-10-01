@@ -14,21 +14,25 @@ const (
 )
 
 type ScalarMetricToRegister struct {
-	key   MetricKey
+	name  string
 	val   ScalarMetricValue
 	mtype ScalarMetricType
 }
 
-func NewScalarMetricToRegister(key MetricKey, val ScalarMetricValue, mtype ScalarMetricType) ScalarMetricToRegister {
+func NewScalarMetricToRegister(name string, val ScalarMetricValue, mtype ScalarMetricType) ScalarMetricToRegister {
 	return ScalarMetricToRegister{
-		key:   key,
+		name:  name,
 		val:   val,
 		mtype: mtype,
 	}
 }
 
 func (s ScalarMetricToRegister) Key() MetricKey {
-	return s.key
+	return BuildMetricKey(s.name, s.mtype)
+}
+
+func (s ScalarMetricToRegister) Name() string {
+	return s.name
 }
 
 func (s ScalarMetricToRegister) Value() ScalarMetricValue {
