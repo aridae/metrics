@@ -39,7 +39,7 @@ func init() {
 	flag.Int64Var(&reportInterval, "r", 10, "частота отправки метрик на сервер (по умолчанию 10 секунд)")
 	flag.Int64Var(&pollInterval, "p", 2, "частота опроса метрик из пакета runtime (по умолчанию 2 секунды)")
 	flag.StringVar(&address, "a", "localhost:8080", "адрес эндпоинта HTTP-сервера (по умолчанию localhost:8080")
-	flag.BoolVar(&useOldHandler, "o", false, "Использовать старый эндпоинт [/update/<type>/<name>/<value>] для сохранения метрики (по умолчанию false)")
+	flag.BoolVar(&useOldHandler, "o", true, "Использовать старый эндпоинт [/update/<type>/<name>/<value>] для сохранения метрики (по умолчанию false)")
 }
 
 func main() {
@@ -105,17 +105,18 @@ func reportMetric(client *http.Client, metricType, metricName string, metricVal 
 func reportMetricWithJSONPayload(client *http.Client, metricType, metricName string, metricVal any) {
 	serverURL, _ := url.JoinPath("http://"+address, baseURLPath)
 
-	metric, err := buildMetricJSONPayload(metricType, metricName, metricVal)
+	jsonPayload, err := buildMetricJSONPayload(metricType, metricName, metricVal)
 	if err != nil {
 		log.Fatalf("failed to build metric json-serializable struct: %v", err)
 	}
 
-	metricBytes, err := json.Marshal(metric)
+	body := new(bytes.Buffer)
+	err = json.NewEncoder(body).Encode(jsonPayload)
 	if err != nil {
-		log.Fatalf("failed to marshal request body: %v", err)
+		log.Fatalf("failed to encode metric json-serializable struct: %v", err)
 	}
 
-	mustDoRequest(client, http.MethodPost, serverURL, metricBytes, "application/json")
+	mustDoRequest(client, http.MethodPost, serverURL, body, "application/json")
 }
 
 func reportMetricWithURLPath(client *http.Client, metricType, metricName string, metricVal any) {
@@ -123,11 +124,11 @@ func reportMetricWithURLPath(client *http.Client, metricType, metricName string,
 
 	serverURL, _ := url.JoinPath("http://"+address, baseURLPath, metricURLPath)
 
-	mustDoRequest(client, http.MethodPost, serverURL, nil, "text/plain")
+	mustDoRequest(client, http.MethodPost, serverURL, &bytes.Buffer{}, "text/plain")
 }
 
-func mustDoRequest(client *http.Client, method string, url string, body []byte, contentType string) {
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
+func mustDoRequest(client *http.Client, method string, url string, body io.Reader, contentType string) {
+	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		log.Fatalf("failed to build http request: %v", err)
 	}
