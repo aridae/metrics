@@ -26,6 +26,8 @@ func main() {
 
 	httpServer := http.NewServer(cnf.GetAddress(), httpRouter,
 		mw.LoggingMiddleware,
+		mw.GzipDecompressRequestMiddleware,
+		mw.GzipCompressResponseMiddleware,
 	)
 
 	if err := httpServer.Run(ctx); err != nil {
