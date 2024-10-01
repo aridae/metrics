@@ -7,6 +7,8 @@ import (
 )
 
 func (rt *Router) getMetricByURLPathHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "text/plain")
+
 	if r.Method != http.MethodGet {
 		http.Error(w, "Only GET requests are allowed.", http.StatusMethodNotAllowed)
 		return
@@ -38,7 +40,4 @@ func (rt *Router) getMetricByURLPathHandler(w http.ResponseWriter, r *http.Reque
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	w.Header().Set("content-type", "text/plain")
-	w.WriteHeader(http.StatusOK)
 }

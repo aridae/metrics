@@ -22,18 +22,30 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 }
 
 type responseTracker struct {
+	wroteHeader bool
+
 	http.ResponseWriter
 	status    int
 	sizeBytes int
 }
 
 func (o *responseTracker) Write(bytes []byte) (int, error) {
+	if !o.wroteHeader {
+		o.WriteHeader(http.StatusOK)
+	}
+
 	size, err := o.ResponseWriter.Write(bytes)
 	o.sizeBytes = size
+
 	return size, err
 }
 
 func (o *responseTracker) WriteHeader(code int) {
-	o.ResponseWriter.WriteHeader(code)
+	if o.wroteHeader {
+		return
+	}
+	o.wroteHeader = true
+	defer o.ResponseWriter.WriteHeader(code)
+
 	o.status = code
 }

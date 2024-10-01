@@ -51,8 +51,6 @@ func (rt *Router) getMetricJSONHandler(w http.ResponseWriter, r *http.Request) {
 		mustWriteJSONError(w, err, http.StatusInternalServerError)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func mustWriteJSONError(w http.ResponseWriter, err error, code int) {

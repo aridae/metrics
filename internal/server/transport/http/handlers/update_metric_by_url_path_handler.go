@@ -41,6 +41,4 @@ func (rt *Router) updateMetricByURLPathHandler(w http.ResponseWriter, r *http.Re
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }

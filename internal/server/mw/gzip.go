@@ -3,6 +3,7 @@ package mw
 import (
 	"compress/gzip"
 	"github.com/aridae/go-metrics-store/internal/server/logger"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -43,16 +44,32 @@ func GzipCompressResponseMiddleware(next http.Handler) http.Handler {
 		}
 		defer gz.Close()
 
-		w.Header().Set("Content-Encoding", "gzip")
-		next.ServeHTTP(gzipWriter{ResponseWriter: w, compressor: gz}, r)
+		next.ServeHTTP(&gzipWriter{ResponseWriter: w, compressor: gz}, r)
 	})
 }
 
 type gzipWriter struct {
+	wroteHeader bool
+
 	http.ResponseWriter
-	compressor *gzip.Writer
+	compressor io.Writer
 }
 
-func (w gzipWriter) Write(b []byte) (int, error) {
-	return w.compressor.Write(b)
+func (gw *gzipWriter) Write(b []byte) (int, error) {
+	if !gw.wroteHeader {
+		gw.WriteHeader(http.StatusOK)
+	}
+
+	return gw.compressor.Write(b)
+}
+
+func (gw *gzipWriter) WriteHeader(code int) {
+	if gw.wroteHeader {
+		return
+	}
+	gw.wroteHeader = true
+	defer gw.ResponseWriter.WriteHeader(code)
+
+	gw.Header().Set("Content-Encoding", "gzip")
+	gw.Header().Del("Content-Length")
 }
