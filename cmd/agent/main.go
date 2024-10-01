@@ -116,7 +116,7 @@ func reportMetricWithJSONPayload(client *http.Client, metricType, metricName str
 		log.Fatalf("failed to encode metric json-serializable struct: %v", err)
 	}
 
-	mustDoRequest(client, http.MethodPost, serverURL, body)
+	mustDoRequest(client, http.MethodPost, serverURL, body, "application/json")
 }
 
 func reportMetricWithURLPath(client *http.Client, metricType, metricName string, metricVal any) {
@@ -124,16 +124,16 @@ func reportMetricWithURLPath(client *http.Client, metricType, metricName string,
 
 	serverURL, _ := url.JoinPath("http://"+address, baseURLPath, metricURLPath)
 
-	mustDoRequest(client, http.MethodPost, serverURL, &bytes.Buffer{})
+	mustDoRequest(client, http.MethodPost, serverURL, &bytes.Buffer{}, "text/plain")
 }
 
-func mustDoRequest(client *http.Client, method string, url string, body io.Reader) {
+func mustDoRequest(client *http.Client, method string, url string, body io.Reader, contentType string) {
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		log.Fatalf("failed to build http request: %v", err)
 	}
 
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", contentType)
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatalf("failed to do http request: %v", err)

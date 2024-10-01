@@ -7,8 +7,10 @@ import (
 )
 
 func (rt *Router) updateMetricJSONHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+
 	if r.Method != http.MethodPost {
-		http.Error(w, "Only POST requests are allowed.", http.StatusMethodNotAllowed)
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -16,41 +18,40 @@ func (rt *Router) updateMetricJSONHandler(w http.ResponseWriter, r *http.Request
 	transportMetric := httpmodels.Metric{}
 	err := json.NewDecoder(r.Body).Decode(&transportMetric)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		mustWriteJSONError(w, err, http.StatusBadRequest)
 		return
 	}
 
 	metricFactory, err := resolveMetricFactoryForMetricType(transportMetric.MType)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		mustWriteJSONError(w, err, http.StatusBadRequest)
 		return
 	}
 
 	metric, err := buildMetricDomainModel(transportMetric, metricFactory)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		mustWriteJSONError(w, err, http.StatusBadRequest)
 		return
 	}
 	metricUpsertStrategy := metricFactory.ProvideUpsertStrategy()
 
 	newMetricState, err := rt.useCasesController.UpsertScalarMetric(ctx, metric, metricUpsertStrategy)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		mustWriteJSONError(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	transportMetricAfterUpsert, err := buildMetricTransportModel(newMetricState)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		mustWriteJSONError(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	err = json.NewEncoder(w).Encode(transportMetricAfterUpsert)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		mustWriteJSONError(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
 }
