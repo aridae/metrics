@@ -48,8 +48,12 @@ func NewRouter(useCasesController useCasesController) *Router {
 
 	chiMux.HandleFunc(updateMetricWithJSONBodyURLPath, router.updateMetricJSONHandler)
 	chiMux.HandleFunc(getMetricWithJSONBodyURLPath, router.getMetricJSONHandler)
+	chiMux.HandleFunc(updateMetricWithJSONBodyURLPath+"/", router.updateMetricJSONHandler) // trailing slash
+	chiMux.HandleFunc(getMetricWithJSONBodyURLPath+"/", router.getMetricJSONHandler)       // trailing slash
+
 	chiMux.HandleFunc(updateMetricWithURLParamsValueURLPath, router.updateMetricByURLPathHandler)
 	chiMux.HandleFunc(getMetricValueURLPath, router.getMetricByURLPathHandler)
+
 	chiMux.HandleFunc(getAllMetricValuesURLPath, router.getAllMetricsHTMLHandler)
 
 	return router

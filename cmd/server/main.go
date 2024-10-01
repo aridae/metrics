@@ -25,7 +25,6 @@ func main() {
 	httpRouter := handlers.NewRouter(useCaseController)
 
 	httpServer := http.NewServer(cnf.GetAddress(), httpRouter,
-		mw.TrimTrailingSlash,
 		mw.LoggingMiddleware,
 	)
 
