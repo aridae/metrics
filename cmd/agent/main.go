@@ -133,7 +133,7 @@ func mustDoRequest(client *http.Client, method string, url string, body io.Reade
 		log.Fatalf("failed to build http request: %v", err)
 	}
 
-	req.Header.Set("Content-Type", "text/plain")
+	req.Header.Set("Content-Type", "application/json")
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatalf("failed to do http request: %v", err)

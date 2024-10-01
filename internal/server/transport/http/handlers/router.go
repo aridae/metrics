@@ -20,8 +20,8 @@ const (
 )
 
 var (
-	updateMetricWithJSONBodyURLPath       = "/update/"
-	getMetricWithJSONBodyURLPath          = "/value/"
+	updateMetricWithJSONBodyURLPath       = "/update"
+	getMetricWithJSONBodyURLPath          = "/value"
 	updateMetricWithURLParamsValueURLPath = fmt.Sprintf("/update/{%s}/{%s}/{%s}", urlParamMetricType, urlParamMetricName, urlParamMetricValue)
 	getMetricValueURLPath                 = fmt.Sprintf("/value/{%s}/{%s}", urlParamMetricType, urlParamMetricName)
 	getAllMetricValuesURLPath             = "/"
