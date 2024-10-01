@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	httpmodels "github.com/aridae/go-metrics-store/internal/server/transport/http/models"
+	"github.com/hashicorp/go-retryablehttp"
 	"io"
 	"log"
 	"math/rand"
@@ -32,12 +33,14 @@ var (
 	pollInterval   int64
 	reportInterval int64
 	address        string
+	useOldHandler  bool
 )
 
 func init() {
 	flag.Int64Var(&reportInterval, "r", 10, "частота отправки метрик на сервер (по умолчанию 10 секунд)")
 	flag.Int64Var(&pollInterval, "p", 2, "частота опроса метрик из пакета runtime (по умолчанию 2 секунды)")
 	flag.StringVar(&address, "a", "localhost:8080", "адрес эндпоинта HTTP-сервера (по умолчанию localhost:8080")
+	flag.BoolVar(&useOldHandler, "o", false, "Использовать старый эндпоинт [/update/<type>/<name>/<value>] для сохранения метрики (по умолчанию false)")
 }
 
 func main() {
@@ -66,7 +69,7 @@ func main() {
 	pollTick := time.NewTicker(time.Duration(pollInterval) * time.Second)
 	reportTick := time.NewTicker(time.Duration(reportInterval) * time.Second)
 
-	httpClient := &http.Client{}
+	httpClient := retryablehttp.NewClient().StandardClient()
 
 	pollCounter := counter(0)
 	gaugeMetrics := make(map[string]gauge)
@@ -92,6 +95,11 @@ func reportMetrics(client *http.Client, gaugeMetrics map[string]gauge, pollCount
 }
 
 func reportMetric(client *http.Client, metricType, metricName string, metricVal any) {
+	if useOldHandler {
+		reportMetricWithURLPath(client, metricType, metricName, metricVal)
+		return
+	}
+
 	reportMetricWithJSONPayload(client, metricType, metricName, metricVal)
 }
 
@@ -103,13 +111,21 @@ func reportMetricWithJSONPayload(client *http.Client, metricType, metricName str
 		log.Fatalf("failed to build metric json-serializable struct: %v", err)
 	}
 
-	requestBody := new(bytes.Buffer)
-	err = json.NewEncoder(requestBody).Encode(jsonPayload)
+	body := new(bytes.Buffer)
+	err = json.NewEncoder(body).Encode(jsonPayload)
 	if err != nil {
 		log.Fatalf("failed to encode metric json-serializable struct: %v", err)
 	}
 
-	mustDoRequest(client, http.MethodPost, serverURL, requestBody, "application/json")
+	mustDoRequest(client, http.MethodPost, serverURL, body, "application/json")
+}
+
+func reportMetricWithURLPath(client *http.Client, metricType, metricName string, metricVal any) {
+	metricURLPath := fmt.Sprintf("/%s/%s/%v", metricType, metricName, metricVal)
+
+	serverURL, _ := url.JoinPath("http://"+address, baseURLPath, metricURLPath)
+
+	mustDoRequest(client, http.MethodPost, serverURL, &bytes.Buffer{}, "text/plain")
 }
 
 func mustDoRequest(client *http.Client, method string, url string, body io.Reader, contentType string) {
@@ -123,18 +139,9 @@ func mustDoRequest(client *http.Client, method string, url string, body io.Reade
 	if err != nil {
 		log.Fatalf("failed to do http request: %v", err)
 	}
+	defer resp.Body.Close()
 
-	defer func() {
-		err = resp.Body.Close()
-		if err != nil {
-			log.Fatalf("failed to close resp body: %v", err)
-		}
-	}()
-
-	_, err = io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalf("failed to read body: %v", err)
-	}
+	_, _ = io.Copy(io.Discard, resp.Body)
 }
 
 func pollMetrics(metrics map[string]gauge) {
