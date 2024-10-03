@@ -10,7 +10,7 @@ const (
 
 	addressDefaultVal      = "localhost:8080"
 	storeIntervalDefault   = time.Duration(300) * time.Second
-	fileStoragePathDefault = "/static/data/.data"
+	fileStoragePathDefault = "./.data"
 	restoreDefault         = true
 )
 
