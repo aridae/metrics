@@ -27,12 +27,11 @@ func NewServer(address string, mux http.Handler, mws ...func(http.Handler) http.
 
 func (s *Server) Run(ctx context.Context) error {
 	go func() {
-		select {
-		case <-ctx.Done():
-			err := s.server.Shutdown(ctx)
-			if err != nil {
-				logger.Obtain().Errorf("error shutting down http server: %v", err)
-			}
+		<-ctx.Done()
+
+		err := s.server.Shutdown(ctx)
+		if err != nil {
+			logger.Obtain().Errorf("error shutting down http server: %v", err)
 		}
 	}()
 
