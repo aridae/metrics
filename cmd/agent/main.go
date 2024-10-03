@@ -30,45 +30,31 @@ const (
 )
 
 var (
-	pollInterval   int64
-	reportInterval int64
+	pollInterval   time.Duration
+	reportInterval time.Duration
 	address        string
 	useOldHandler  bool
 )
 
 func init() {
-	flag.Int64Var(&reportInterval, "r", 10, "частота отправки метрик на сервер (по умолчанию 10 секунд)")
-	flag.Int64Var(&pollInterval, "p", 2, "частота опроса метрик из пакета runtime (по умолчанию 2 секунды)")
-	flag.StringVar(&address, "a", "localhost:8080", "адрес эндпоинта HTTP-сервера (по умолчанию localhost:8080")
-	flag.BoolVar(&useOldHandler, "o", false, "Использовать старый эндпоинт [/update/<type>/<name>/<value>] для сохранения метрики (по умолчанию false)")
+	initFlags()
 }
 
 func main() {
 	flag.Parse()
+	parseEnv()
 
-	if envAddress := os.Getenv("ADDRESS"); envAddress != "" {
-		address = envAddress
-	}
+	pollTick := time.NewTicker(pollInterval)
+	reportTick := time.NewTicker(reportInterval)
 
-	if envReportInterval := os.Getenv("REPORT_INTERVAL"); envReportInterval != "" {
-		parsedEnv, err := strconv.ParseInt(envReportInterval, 10, 64)
-		if err != nil {
-			log.Fatalf("invalid REPORT_INTERVAL environment variable, int64 value expected: %v", err)
-		}
-		reportInterval = parsedEnv
-	}
-
-	if envPollInterval := os.Getenv("POLL_INTERVAL"); envPollInterval != "" {
-		parsedEnv, err := strconv.ParseInt(envPollInterval, 10, 64)
-		if err != nil {
-			log.Fatalf("invalid POLL_INTERVAL environment variable, int64 value expected: %v", err)
-		}
-		pollInterval = parsedEnv
-	}
-
-	pollTick := time.NewTicker(time.Duration(pollInterval) * time.Second)
-	reportTick := time.NewTicker(time.Duration(reportInterval) * time.Second)
-
+	// NOTE: если юзать не retryable, а стандартного http клиента,
+	// то в автотесты на итерации 7-9 падают из-за ошибки клиента
+	// при выполнении запроса - EOF. Локально такое не воспроизводится,
+	// и я не могу вкурить, из-за чего это происходит.
+	// У меня есть предположение, что это происходит из-за того, что
+	// http сервер закрывает соединение без keep-alive после первого запроса,
+	// а http client пытается переиспользовать соединение. Но я не смогла найти в доке пруфы
+	// или другое объяснение. И не понимаю, почему локально не воспроизводится (((
 	httpClient := retryablehttp.NewClient().StandardClient()
 
 	pollCounter := counter(0)
@@ -241,3 +227,37 @@ const (
 	RandomValueMetricName   = "RandomValue"
 	PollCountMetricName     = "PollCount"
 )
+
+func initFlags() {
+	reportIntervalSec := flag.Int64("r", 10, "частота отправки метрик на сервер (по умолчанию 10 секунд)")
+	reportInterval = time.Duration(*reportIntervalSec) * time.Second
+
+	pollIntervalSec := flag.Int64("p", 2, "частота опроса метрик из пакета runtime (по умолчанию 2 секунды)")
+	pollInterval = time.Duration(*pollIntervalSec) * time.Second
+
+	flag.StringVar(&address, "a", "localhost:8080", "адрес эндпоинта HTTP-сервера (по умолчанию localhost:8080")
+	flag.BoolVar(&useOldHandler, "o", false, "Использовать старый эндпоинт [/update/<type>/<name>/<value>] для сохранения метрики (по умолчанию false)")
+
+}
+
+func parseEnv() {
+	if envAddress := os.Getenv("ADDRESS"); envAddress != "" {
+		address = envAddress
+	}
+
+	if envReportInterval := os.Getenv("REPORT_INTERVAL"); envReportInterval != "" {
+		reportIntervalSec, err := strconv.ParseInt(envReportInterval, 10, 64)
+		if err != nil {
+			log.Fatalf("invalid REPORT_INTERVAL environment variable, int64 value expected: %v", err)
+		}
+		reportInterval = time.Duration(reportIntervalSec) * time.Second
+	}
+
+	if envPollInterval := os.Getenv("POLL_INTERVAL"); envPollInterval != "" {
+		pollIntervalSec, err := strconv.ParseInt(envPollInterval, 10, 64)
+		if err != nil {
+			log.Fatalf("invalid POLL_INTERVAL environment variable, int64 value expected: %v", err)
+		}
+		pollInterval = time.Duration(pollIntervalSec) * time.Second
+	}
+}

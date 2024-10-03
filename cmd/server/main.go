@@ -53,6 +53,13 @@ func main() {
 func mustInitMemStore(ctx context.Context, cnf *config.Config) *tsstorage.MemTimeseriesStorage {
 	memStore := tsstorage.New()
 
+	// NOTE: tsstorage.MemTimeseriesStorage работает с интерфейсом TimeseriesValue
+	// и не знает о том, какие модельки передаются под капотом. Но из-за этого,
+	// при бэкапе в файл, и последующем чтении из файла MemTimeseriesStorage не может знать,
+	// в какую структуру/структурки десереализовать содержимое файла.
+	// Чтобы не писать свои маршаллеры/анмаршраллеры на рефлексии,
+	// я регистрирую типы для использования в gob.Encoder/Decoder.
+	// Но это делает стор зависимым от гошных моделек, и мне от этого грустно.
 	err := memStore.InitBackup(ctx, cnf.FileStoragePath, cnf.StoreInterval, map[string]any{
 		"ScalarMetric":       models.ScalarMetric{},
 		"Int64MetricValue":   models.NewInt64MetricValue(0),

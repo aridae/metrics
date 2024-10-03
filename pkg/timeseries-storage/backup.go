@@ -72,6 +72,7 @@ func (mem *MemTimeseriesStorage) dumpBackup() error {
 	defer mem.fileMu.Unlock()
 	defer mem.storeMu.RUnlock()
 
+	// NOTE: а есть способ сделать это более элегантно? Рыдаю ToT
 	mem.backupFile.Truncate(0)
 	mem.backupFile.Seek(0, 0)
 
