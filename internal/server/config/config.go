@@ -1,63 +1,56 @@
 package config
 
-import "sync"
-
-const (
-	defaultAddress = "localhost:8080"
+import (
+	"sync"
+	"time"
 )
 
-type Config interface {
-	GetAddress() string
-}
+const (
+	yamlConfigPath = "./config/server.yaml"
+
+	addressDefaultVal      = "localhost:8080"
+	storeIntervalDefault   = time.Duration(300) * time.Second
+	fileStoragePathDefault = "/static/data/.data"
+	restoreDefault         = true
+)
 
 var (
 	once         sync.Once
-	globalConfig *config
+	globalConfig *Config
 )
 
-type config struct {
-	address string
+type Config struct {
+	Address         string
+	StoreInterval   time.Duration
+	FileStoragePath string
+	Restore         bool
 }
 
-func (c *config) GetAddress() string {
-	return c.address
-}
-
-func Obtain() Config {
+func Obtain() *Config {
 	once.Do(func() {
-		globalConfig = &config{}
+		globalConfig = &Config{}
 		globalConfig.init()
 	})
 
 	return globalConfig
 }
 
-func (c *config) init() {
-	// значения конфига по умолчанию
+func (c *Config) init() {
 	c.defaults()
 
-	// инициализация структуры конфига
-	// из значений, переданных через флаги
-	configValuesFromFlags := parseFlags().configSetters()
-	c.eval(configValuesFromFlags...)
+	// инициализация структуры конфига из yaml файла
+	parseYaml(yamlConfigPath).override(c)
+
+	// перезатираем значениями, переданными через флаги
+	parseFlags().override(c)
 
 	// env, если есть, затирает флаги
-	configValuesFromEnv := readEnv().configSetters()
-	c.eval(configValuesFromEnv...)
+	readEnv().override(c)
 }
 
-func (c *config) isInit() bool {
-	return globalConfig != nil
-}
-
-type configSetter func(cfg *config)
-
-func (c *config) eval(setters ...configSetter) {
-	for _, setter := range setters {
-		setter(c)
-	}
-}
-
-func (c *config) defaults() {
-	c.address = defaultAddress
+func (c *Config) defaults() {
+	c.Address = addressDefaultVal
+	c.StoreInterval = storeIntervalDefault
+	c.FileStoragePath = fileStoragePathDefault
+	c.Restore = restoreDefault
 }

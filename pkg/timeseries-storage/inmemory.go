@@ -2,6 +2,7 @@ package timeseriesstorage
 
 import (
 	"context"
+	"os"
 	"sort"
 	"sync"
 	"time"
@@ -9,13 +10,21 @@ import (
 
 type Key string
 
+func (k Key) String() string {
+	return string(k)
+}
+
 type TimeseriesValue interface {
-	Datetime() time.Time
+	GetDatetime() time.Time
 }
 
 type MemTimeseriesStorage struct {
-	mu    sync.RWMutex
-	store map[Key][]TimeseriesValue
+	storeMu sync.RWMutex
+	store   map[Key][]TimeseriesValue
+
+	fileMu         sync.RWMutex
+	backupFile     *os.File
+	backupInterval time.Duration
 }
 
 func New() *MemTimeseriesStorage {
@@ -25,23 +34,23 @@ func New() *MemTimeseriesStorage {
 }
 
 func (mem *MemTimeseriesStorage) Save(_ context.Context, key Key, value TimeseriesValue) {
-	mem.mu.Lock()
-	defer mem.mu.Unlock()
+	mem.storeMu.Lock()
+	defer mem.storeMu.Unlock()
 
 	timeseries := mem.store[key]
 
 	timeseries = append(timeseries, value)
 
 	sort.SliceStable(timeseries, func(i, j int) bool {
-		return timeseries[i].Datetime().Before(timeseries[j].Datetime())
+		return timeseries[i].GetDatetime().Before(timeseries[j].GetDatetime())
 	})
 
 	mem.store[key] = timeseries
 }
 
 func (mem *MemTimeseriesStorage) GetLatest(_ context.Context, key Key) TimeseriesValue {
-	mem.mu.RLock()
-	defer mem.mu.RUnlock()
+	mem.storeMu.RLock()
+	defer mem.storeMu.RUnlock()
 
 	timeseries := mem.store[key]
 	if len(timeseries) == 0 {
@@ -52,8 +61,8 @@ func (mem *MemTimeseriesStorage) GetLatest(_ context.Context, key Key) Timeserie
 }
 
 func (mem *MemTimeseriesStorage) GetAllLatest(_ context.Context) []TimeseriesValue {
-	mem.mu.RLock()
-	defer mem.mu.RUnlock()
+	mem.storeMu.RLock()
+	defer mem.storeMu.RUnlock()
 
 	res := make([]TimeseriesValue, 0, len(mem.store))
 	for _, timeseries := range mem.store {

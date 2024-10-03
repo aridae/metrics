@@ -14,52 +14,52 @@ const (
 )
 
 type ScalarMetricToRegister struct {
-	name  string
-	val   ScalarMetricValue
-	mtype ScalarMetricType
+	MName string
+	Mtype ScalarMetricType
+	Val   ScalarMetricValue
 }
 
 func NewScalarMetricToRegister(name string, val ScalarMetricValue, mtype ScalarMetricType) ScalarMetricToRegister {
 	return ScalarMetricToRegister{
-		name:  name,
-		val:   val,
-		mtype: mtype,
+		MName: name,
+		Val:   val,
+		Mtype: mtype,
 	}
 }
 
 func (s ScalarMetricToRegister) Key() MetricKey {
-	return BuildMetricKey(s.name, s.mtype)
+	return BuildMetricKey(s.MName, s.Mtype)
 }
 
 func (s ScalarMetricToRegister) Name() string {
-	return s.name
+	return s.MName
 }
 
 func (s ScalarMetricToRegister) Value() ScalarMetricValue {
-	return s.val
+	return s.Val
 }
 
 func (s ScalarMetricToRegister) Type() ScalarMetricType {
-	return s.mtype
+	return s.Mtype
 }
 
 func (s ScalarMetricToRegister) WithValue(v ScalarMetricValue) ScalarMetricToRegister {
-	s.val = v // local copy only
+	s.Val = v // local copy only
 	return s
 }
 
 func (s ScalarMetricToRegister) AtDatetime(now time.Time) ScalarMetric {
 	return ScalarMetric{
 		ScalarMetricToRegister: s,
-		dt:                     now,
+		Datetime:               now,
 	}
 }
 
 type ScalarMetric struct {
 	ScalarMetricToRegister
-	dt time.Time
+	Datetime time.Time
 }
 
-func (s ScalarMetric) Datetime() time.Time {
-	return s.dt
+func (s ScalarMetric) GetDatetime() time.Time {
+	return s.Datetime
 }

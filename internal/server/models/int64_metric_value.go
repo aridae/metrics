@@ -5,15 +5,15 @@ import (
 )
 
 type int64MetricValue struct {
-	val int64
+	Val int64
 }
 
 func NewInt64MetricValue(val int64) ScalarMetricValue {
-	return int64MetricValue{val: val}
+	return int64MetricValue{Val: val}
 }
 
 func (mv int64MetricValue) String() string {
-	return fmt.Sprintf("%d", mv.val)
+	return fmt.Sprintf("%d", mv.Val)
 }
 
 func (mv int64MetricValue) Inc(v ScalarMetricValue) (ScalarMetricValue, error) {
@@ -22,7 +22,7 @@ func (mv int64MetricValue) Inc(v ScalarMetricValue) (ScalarMetricValue, error) {
 		return nil, fmt.Errorf("expected int64 metric value, got %T", v)
 	}
 
-	newVal := mv.val + int64Val.val
+	newVal := mv.Val + int64Val.Val
 
-	return int64MetricValue{val: newVal}, nil
+	return int64MetricValue{Val: newVal}, nil
 }

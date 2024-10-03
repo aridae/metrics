@@ -6,15 +6,15 @@ import (
 )
 
 type float64MetricValue struct {
-	val float64
+	Val float64
 }
 
 func NewFloat64MetricValue(val float64) ScalarMetricValue {
-	return float64MetricValue{val: val}
+	return float64MetricValue{Val: val}
 }
 
 func (mv float64MetricValue) String() string {
-	return strconv.FormatFloat(mv.val, 'f', -1, 64)
+	return strconv.FormatFloat(mv.Val, 'f', -1, 64)
 }
 
 func (mv float64MetricValue) Inc(v ScalarMetricValue) (ScalarMetricValue, error) {
@@ -23,7 +23,7 @@ func (mv float64MetricValue) Inc(v ScalarMetricValue) (ScalarMetricValue, error)
 		return nil, fmt.Errorf("expected float64 metric value, got %T", v)
 	}
 
-	newVal := mv.val + float64Val.val
+	newVal := mv.Val + float64Val.Val
 
-	return float64MetricValue{val: newVal}, nil
+	return float64MetricValue{Val: newVal}, nil
 }

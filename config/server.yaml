@@ -1,0 +1,4 @@
+address: "localhost:8080"
+store_interval: "3s"
+file_storage_path: "./static/data/.data_another"
+restore: true

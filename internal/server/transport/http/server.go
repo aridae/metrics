@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"fmt"
+	"github.com/aridae/go-metrics-store/internal/server/logger"
 	"net/http"
 )
 
@@ -24,14 +25,20 @@ func NewServer(address string, mux http.Handler, mws ...func(http.Handler) http.
 	return &Server{address: address, server: server}
 }
 
-func (s *Server) Run(_ context.Context) error {
+func (s *Server) Run(ctx context.Context) error {
+	go func() {
+		select {
+		case <-ctx.Done():
+			err := s.server.Shutdown(ctx)
+			if err != nil {
+				logger.Obtain().Errorf("error shutting down http server: %v", err)
+			}
+		}
+	}()
+
 	if err := s.server.ListenAndServe(); err != nil {
 		return fmt.Errorf("server.ListenAndServe: %w", err)
 	}
 
 	return nil
-}
-
-func (s *Server) Shutdown(ctx context.Context) error {
-	return s.server.Shutdown(ctx)
 }
