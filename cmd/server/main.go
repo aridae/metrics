@@ -20,14 +20,13 @@ import (
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
-		signalCh := make(chan os.Signal)
+		signalCh := make(chan os.Signal, 1)
 		signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGHUP)
 
-		select {
-		case <-signalCh:
-			logger.Obtain().Infof("Got signal %s, shutting down...", "FUCK YOU")
-			cancel()
-		}
+		<-signalCh
+
+		logger.Obtain().Info("Got signal, shutting down...")
+		cancel()
 	}()
 
 	cnf := config.Obtain()
