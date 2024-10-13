@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"context"
-	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers/_stub"
-	"github.com/go-chi/chi/v5"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers/_stub"
+	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_getUpdateMetricByURLPathHandler_TableTest(t *testing.T) {

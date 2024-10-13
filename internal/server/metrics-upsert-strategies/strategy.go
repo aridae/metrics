@@ -2,8 +2,9 @@ package metricsupsertstrategies
 
 import (
 	"context"
-	"github.com/aridae/go-metrics-store/internal/server/models"
 	"time"
+
+	"github.com/aridae/go-metrics-store/internal/server/models"
 )
 
 type metricsRepo interface {

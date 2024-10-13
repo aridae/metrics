@@ -2,10 +2,11 @@ package mw
 
 import (
 	"compress/gzip"
-	"github.com/aridae/go-metrics-store/internal/server/logger"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/aridae/go-metrics-store/internal/server/logger"
 )
 
 func GzipDecompressRequestMiddleware(next http.Handler) http.Handler {

@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
-	"github.com/aridae/go-metrics-store/internal/server/logger"
 	"io"
 	"os"
 	"time"
+
+	"github.com/aridae/go-metrics-store/internal/server/logger"
 )
 
 func (mem *MemTimeseriesStorage) InitBackup(
@@ -73,8 +74,8 @@ func (mem *MemTimeseriesStorage) dumpBackup() error {
 	defer mem.storeMu.RUnlock()
 
 	// NOTE: а есть способ сделать это более элегантно? Рыдаю ToT
-	mem.backupFile.Truncate(0)
-	mem.backupFile.Seek(0, 0)
+	mem.backupFile.Truncate(0) //nolint:errcheck
+	mem.backupFile.Seek(0, 0)  //nolint:errcheck
 
 	return gob.NewEncoder(mem.backupFile).Encode(mem.store)
 }

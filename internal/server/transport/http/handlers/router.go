@@ -3,11 +3,12 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	metricsfabrics "github.com/aridae/go-metrics-store/internal/server/metrics-fabrics"
 	metricsupsertstrategies "github.com/aridae/go-metrics-store/internal/server/metrics-upsert-strategies"
 	"github.com/aridae/go-metrics-store/internal/server/models"
 	"github.com/go-chi/chi/v5"
-	"net/http"
 )
 
 const (

@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	httpmodels "github.com/aridae/go-metrics-store/internal/server/transport/http/models"
-	"github.com/hashicorp/go-retryablehttp"
 	"io"
 	"log"
 	"math/rand"
@@ -16,6 +14,9 @@ import (
 	"runtime"
 	"strconv"
 	"time"
+
+	httpmodels "github.com/aridae/go-metrics-store/internal/server/transport/http/models"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 type (

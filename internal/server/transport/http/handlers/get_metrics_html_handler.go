@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	metricstmplt "github.com/aridae/go-metrics-store/static/templates/metrics"
 	"html/template"
 	"net/http"
+
+	metricstmplt "github.com/aridae/go-metrics-store/static/templates/metrics"
 )
 
 func (rt *Router) getAllMetricsHTMLHandler(w http.ResponseWriter, r *http.Request) {

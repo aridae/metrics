@@ -3,6 +3,8 @@ package config
 import (
 	"sync"
 	"time"
+
+	"github.com/aridae/go-metrics-store/internal/server/logger"
 )
 
 const (
@@ -39,13 +41,23 @@ func (c *Config) init() {
 	c.defaults()
 
 	// инициализация структуры конфига из yaml файла
-	parseYaml(yamlConfigPath).override(c)
+	yamlsValues, err := parseYaml(yamlConfigPath)
+	if err != nil {
+		logger.Obtain().Errorf("error parsing yaml config, proceeding without yaml overrides: %v", err)
+	} else {
+		yamlsValues.override(c)
+	}
 
 	// перезатираем значениями, переданными через флаги
 	parseFlags().override(c)
 
 	// env, если есть, затирает флаги
-	readEnv().override(c)
+	envValues, err := readEnv()
+	if err != nil {
+		logger.Obtain().Errorf("error parsing environment, proceeding without env overrides: %v", err)
+	} else {
+		envValues.override(c)
+	}
 }
 
 func (c *Config) defaults() {
@@ -53,4 +65,44 @@ func (c *Config) defaults() {
 	c.StoreInterval = storeIntervalDefault
 	c.FileStoragePath = fileStoragePathDefault
 	c.Restore = restoreDefault
+}
+
+func (c *Config) overrideAddressIfNotDefault(address string, source string) {
+	if address == addressDefaultVal {
+		logger.Obtain().Debugf("source %s provided default Address value, not overriding", source)
+		return
+	}
+
+	logger.Obtain().Infof("overriding Address from %s: (%s)-->(%s)", source, c.Address, address)
+	c.Address = address
+}
+
+func (c *Config) overrideStoreIntervalIfNotDefault(storeInterval time.Duration, source string) {
+	if storeInterval == storeIntervalDefault {
+		logger.Obtain().Debugf("source %s provided default StoreInterval value, not overriding", source)
+		return
+	}
+
+	logger.Obtain().Infof("overriding StoreInterval from %s: (%s)-->(%s)", source, c.StoreInterval, storeInterval)
+	c.StoreInterval = storeInterval
+}
+
+func (c *Config) overrideFileStoragePathIfNotDefault(fileStoragePath string, source string) {
+	if fileStoragePath == fileStoragePathDefault {
+		logger.Obtain().Debugf("source %s provided default FileStoragePath value, not overriding", source)
+		return
+	}
+
+	logger.Obtain().Infof("overriding FileStoragePath from %s: (%s)-->(%s)", source, c.FileStoragePath, fileStoragePath)
+	c.FileStoragePath = fileStoragePath
+}
+
+func (c *Config) overrideRestoreIfNotDefault(restore bool, source string) {
+	if restore == restoreDefault { //nolint:gosimple
+		logger.Obtain().Debugf("source %s provided default Restore value, not overriding", source)
+		return
+	}
+
+	logger.Obtain().Infof("overriding Restore from %s: (%t)-->(%t)", source, c.Restore, restore)
+	c.Restore = restore
 }

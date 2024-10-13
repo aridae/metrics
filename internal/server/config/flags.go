@@ -2,24 +2,27 @@ package config
 
 import (
 	"flag"
-	"log"
 	"time"
 )
 
 type flags struct {
-	AddressOverride              string
-	StoreIntervalSecondsOverride int64
-	FileStoragePathOverride      string
-	RestoreOverride              bool
+	AddressOverride         string
+	StoreIntervalOverride   time.Duration
+	FileStoragePathOverride string
+	RestoreOverride         bool
 }
 
 func parseFlags() flags {
 	flgs := flags{}
 
-	flag.StringVar(&flgs.AddressOverride, "a", "", "Address of server")
-	flag.Int64Var(&flgs.StoreIntervalSecondsOverride, "i", 0, "Address of server")
-	flag.StringVar(&flgs.FileStoragePathOverride, "f", "", "Address of server")
-	flag.BoolVar(&flgs.RestoreOverride, "r", false, "Address of server")
+	flag.StringVar(&flgs.AddressOverride, "a", addressDefaultVal, "Address of server")
+
+	storeInterval := flag.Int64("i", int64(storeIntervalDefault.Seconds()), "Backup store interval")
+	flgs.StoreIntervalOverride = time.Duration(*storeInterval) * time.Second
+
+	flag.StringVar(&flgs.FileStoragePathOverride, "f", fileStoragePathDefault, "Backup file path")
+
+	flag.BoolVar(&flgs.RestoreOverride, "r", restoreDefault, "Restore from backup file on start")
 
 	flag.Parse()
 
@@ -27,23 +30,8 @@ func parseFlags() flags {
 }
 
 func (f flags) override(cfg *Config) {
-	if f.AddressOverride != "" {
-		log.Printf("overriding Address with flag: %s", f.AddressOverride)
-		cfg.Address = f.AddressOverride
-	}
-
-	if f.StoreIntervalSecondsOverride != 0 {
-		log.Printf("overriding StoreInterval with flag: %d", f.StoreIntervalSecondsOverride)
-		cfg.StoreInterval = time.Duration(f.StoreIntervalSecondsOverride) * time.Second
-	}
-
-	if f.FileStoragePathOverride != "" {
-		log.Printf("overriding FileStoragePath with flag: %s", f.FileStoragePathOverride)
-		cfg.FileStoragePath = f.FileStoragePathOverride
-	}
-
-	if f.RestoreOverride {
-		log.Printf("overriding Restore with flag: %t", f.RestoreOverride)
-		cfg.Restore = f.RestoreOverride
-	}
+	cfg.overrideAddressIfNotDefault(f.AddressOverride, "flags")
+	cfg.overrideStoreIntervalIfNotDefault(f.StoreIntervalOverride, "flags")
+	cfg.overrideFileStoragePathIfNotDefault(f.FileStoragePathOverride, "flags")
+	cfg.overrideRestoreIfNotDefault(f.RestoreOverride, "flags")
 }

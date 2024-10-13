@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strings"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func (rt *Router) updateMetricByURLPathHandler(w http.ResponseWriter, r *http.Request) {

@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/aridae/go-metrics-store/internal/server/models"
 	httpmodels "github.com/aridae/go-metrics-store/internal/server/transport/http/models"
-	"strconv"
 )
 
 func buildMetricTransportModel(metric models.ScalarMetric) (httpmodels.Metric, error) {

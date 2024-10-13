@@ -2,8 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
-	httpmodels "github.com/aridae/go-metrics-store/internal/server/transport/http/models"
 	"net/http"
+
+	httpmodels "github.com/aridae/go-metrics-store/internal/server/transport/http/models"
 )
 
 func (rt *Router) updateMetricJSONHandler(w http.ResponseWriter, r *http.Request) {

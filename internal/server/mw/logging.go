@@ -1,9 +1,10 @@
 package mw
 
 import (
-	"github.com/aridae/go-metrics-store/internal/server/logger"
 	"net/http"
 	"time"
+
+	"github.com/aridae/go-metrics-store/internal/server/logger"
 )
 
 func LoggingMiddleware(next http.Handler) http.Handler {

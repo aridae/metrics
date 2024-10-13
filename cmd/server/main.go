@@ -2,6 +2,10 @@ package main
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/aridae/go-metrics-store/internal/server/config"
 	"github.com/aridae/go-metrics-store/internal/server/logger"
 	"github.com/aridae/go-metrics-store/internal/server/models"
@@ -11,10 +15,6 @@ import (
 	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers"
 	"github.com/aridae/go-metrics-store/internal/server/usecases"
 	tsstorage "github.com/aridae/go-metrics-store/pkg/timeseries-storage"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 func main() {
@@ -26,6 +26,9 @@ func main() {
 		<-signalCh
 
 		logger.Obtain().Info("Got signal, shutting down...")
+
+		// If you fail to cancel the context, the goroutine that WithCancel or WithTimeout created
+		// will be retained in memory indefinitely (until the program shuts down), causing a memory leak.
 		cancel()
 	}()
 
@@ -46,7 +49,7 @@ func main() {
 	)
 
 	if err := httpServer.Run(ctx); err != nil {
-		log.Fatalf("failed to start server: %v", err)
+		logger.Obtain().Fatalf("failed to start server: %v", err)
 	}
 }
 
@@ -66,13 +69,13 @@ func mustInitMemStore(ctx context.Context, cnf *config.Config) *tsstorage.MemTim
 		"Float64MetricValue": models.NewFloat64MetricValue(0),
 	})
 	if err != nil {
-		log.Fatalf("failed to init mem store backup: %v", err)
+		logger.Obtain().Fatalf("failed to init mem store backup: %v", err)
 	}
 
 	if cnf.Restore {
 		err = memStore.LoadFromBackup()
 		if err != nil {
-			log.Fatalf("failed to load mem store from backup: %v", err)
+			logger.Obtain().Fatalf("failed to load mem store from backup: %v", err)
 		}
 	}
 

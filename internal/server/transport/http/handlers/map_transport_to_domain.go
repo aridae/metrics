@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
+
 	metricsfabrics "github.com/aridae/go-metrics-store/internal/server/metrics-fabrics"
 	"github.com/aridae/go-metrics-store/internal/server/models"
 	httpmodels "github.com/aridae/go-metrics-store/internal/server/transport/http/models"

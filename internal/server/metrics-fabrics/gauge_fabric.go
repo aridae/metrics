@@ -2,9 +2,10 @@ package metricsfabrics
 
 import (
 	"fmt"
+	"strconv"
+
 	metricsupsertstrategies "github.com/aridae/go-metrics-store/internal/server/metrics-upsert-strategies"
 	"github.com/aridae/go-metrics-store/internal/server/models"
-	"strconv"
 )
 
 type gaugeMetricFactory struct{}

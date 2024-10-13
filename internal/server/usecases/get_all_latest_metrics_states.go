@@ -3,6 +3,7 @@ package usecases
 import (
 	"context"
 	"fmt"
+
 	"github.com/aridae/go-metrics-store/internal/server/models"
 )
 
