@@ -7,7 +7,6 @@ import (
 
 	"github.com/aridae/go-metrics-store/internal/server/logger"
 	"github.com/jackc/pgx"
-	_ "github.com/jackc/pgx"
 )
 
 // Client replaceable pgx wrapper
