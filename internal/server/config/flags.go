@@ -2,27 +2,36 @@ package config
 
 import (
 	"flag"
-	"log"
+	"time"
 )
 
 type flags struct {
-	Address string
+	AddressOverride         string
+	StoreIntervalOverride   time.Duration
+	FileStoragePathOverride string
+	RestoreOverride         bool
 }
 
 func parseFlags() flags {
 	flgs := flags{}
-	flag.StringVar(&flgs.Address, "a", "", "Address of server, default: localhost:8080")
+
+	flag.StringVar(&flgs.AddressOverride, "a", addressDefaultVal, "Address of server")
+
+	storeInterval := flag.Int64("i", int64(storeIntervalDefault.Seconds()), "Backup store interval")
+	flgs.StoreIntervalOverride = time.Duration(*storeInterval) * time.Second
+
+	flag.StringVar(&flgs.FileStoragePathOverride, "f", fileStoragePathDefault, "Backup file path")
+
+	flag.BoolVar(&flgs.RestoreOverride, "r", restoreDefault, "Restore from backup file on start")
+
 	flag.Parse()
+
 	return flgs
 }
 
-func (f flags) configSetters() []configSetter {
-	return []configSetter{
-		func(cfg *config) {
-			if f.Address != "" {
-				log.Printf("overriding address with flag: %s", f.Address)
-				cfg.address = f.Address
-			}
-		},
-	}
+func (f flags) override(cfg *Config) {
+	cfg.overrideAddressIfNotDefault(f.AddressOverride, "flags")
+	cfg.overrideStoreIntervalIfNotDefault(f.StoreIntervalOverride, "flags")
+	cfg.overrideFileStoragePathIfNotDefault(f.FileStoragePathOverride, "flags")
+	cfg.overrideRestoreIfNotDefault(f.RestoreOverride, "flags")
 }

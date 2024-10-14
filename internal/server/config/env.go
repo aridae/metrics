@@ -1,32 +1,45 @@
 package config
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/caarlos0/env/v6"
-	"log"
 )
 
 type environs struct {
-	Address string `env:"ADDRESS"`
+	AddressOverride              *string `env:"ADDRESS"`
+	StoreIntervalSecondsOverride *int64  `env:"STORE_INTERVAL"`
+	FileStoragePathOverride      *string `env:"FILE_STORAGE_PATH"`
+	RestoreOverride              *bool   `env:"RESTORE"`
 }
 
-func readEnv() environs {
+func readEnv() (environs, error) {
 	envs := environs{}
 
 	err := env.Parse(&envs)
 	if err != nil {
-		log.Fatalf("failed to parse env variables: %v", err)
+		return environs{}, fmt.Errorf("failed to parse env variables: %w", err)
 	}
 
-	return envs
+	return envs, nil
 }
 
-func (e environs) configSetters() []configSetter {
-	return []configSetter{
-		func(cfg *config) {
-			if e.Address != "" {
-				log.Printf("overriding address with env variable: %s", e.Address)
-				cfg.address = e.Address
-			}
-		},
+func (e environs) override(cfg *Config) {
+	if e.AddressOverride != nil {
+		cfg.overrideAddressIfNotDefault(*e.AddressOverride, "env")
+	}
+
+	if e.StoreIntervalSecondsOverride != nil {
+		storeInterval := time.Duration(*e.StoreIntervalSecondsOverride) * time.Second
+		cfg.overrideStoreIntervalIfNotDefault(storeInterval, "env")
+	}
+
+	if e.FileStoragePathOverride != nil {
+		cfg.overrideFileStoragePathIfNotDefault(*e.FileStoragePathOverride, "env")
+	}
+
+	if e.RestoreOverride != nil {
+		cfg.overrideRestoreIfNotDefault(*e.RestoreOverride, "env")
 	}
 }

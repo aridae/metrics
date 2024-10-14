@@ -1,63 +1,108 @@
 package config
 
-import "sync"
+import (
+	"sync"
+	"time"
 
-const (
-	defaultAddress = "localhost:8080"
+	"github.com/aridae/go-metrics-store/internal/server/logger"
 )
 
-type Config interface {
-	GetAddress() string
-}
+const (
+	yamlConfigPath = "./config/server.yaml"
+
+	addressDefaultVal      = "localhost:8080"
+	storeIntervalDefault   = time.Duration(300) * time.Second
+	fileStoragePathDefault = "./.data"
+	restoreDefault         = true
+)
 
 var (
 	once         sync.Once
-	globalConfig *config
+	globalConfig *Config
 )
 
-type config struct {
-	address string
+type Config struct {
+	Address         string
+	StoreInterval   time.Duration
+	FileStoragePath string
+	Restore         bool
 }
 
-func (c *config) GetAddress() string {
-	return c.address
-}
-
-func Obtain() Config {
+func Obtain() *Config {
 	once.Do(func() {
-		globalConfig = &config{}
+		globalConfig = &Config{}
 		globalConfig.init()
 	})
 
 	return globalConfig
 }
 
-func (c *config) init() {
-	// значения конфига по умолчанию
+func (c *Config) init() {
 	c.defaults()
 
-	// инициализация структуры конфига
-	// из значений, переданных через флаги
-	configValuesFromFlags := parseFlags().configSetters()
-	c.eval(configValuesFromFlags...)
+	// инициализация структуры конфига из yaml файла
+	yamlsValues, err := parseYaml(yamlConfigPath)
+	if err != nil {
+		logger.Obtain().Errorf("error parsing yaml config, proceeding without yaml overrides: %v", err)
+	} else {
+		yamlsValues.override(c)
+	}
+
+	// перезатираем значениями, переданными через флаги
+	parseFlags().override(c)
 
 	// env, если есть, затирает флаги
-	configValuesFromEnv := readEnv().configSetters()
-	c.eval(configValuesFromEnv...)
-}
-
-func (c *config) isInit() bool {
-	return globalConfig != nil
-}
-
-type configSetter func(cfg *config)
-
-func (c *config) eval(setters ...configSetter) {
-	for _, setter := range setters {
-		setter(c)
+	envValues, err := readEnv()
+	if err != nil {
+		logger.Obtain().Errorf("error parsing environment, proceeding without env overrides: %v", err)
+	} else {
+		envValues.override(c)
 	}
 }
 
-func (c *config) defaults() {
-	c.address = defaultAddress
+func (c *Config) defaults() {
+	c.Address = addressDefaultVal
+	c.StoreInterval = storeIntervalDefault
+	c.FileStoragePath = fileStoragePathDefault
+	c.Restore = restoreDefault
+}
+
+func (c *Config) overrideAddressIfNotDefault(address string, source string) {
+	if address == addressDefaultVal {
+		logger.Obtain().Debugf("source %s provided default Address value, not overriding", source)
+		return
+	}
+
+	logger.Obtain().Infof("overriding Address from %s: (%s)-->(%s)", source, c.Address, address)
+	c.Address = address
+}
+
+func (c *Config) overrideStoreIntervalIfNotDefault(storeInterval time.Duration, source string) {
+	if storeInterval == storeIntervalDefault {
+		logger.Obtain().Debugf("source %s provided default StoreInterval value, not overriding", source)
+		return
+	}
+
+	logger.Obtain().Infof("overriding StoreInterval from %s: (%s)-->(%s)", source, c.StoreInterval, storeInterval)
+	c.StoreInterval = storeInterval
+}
+
+func (c *Config) overrideFileStoragePathIfNotDefault(fileStoragePath string, source string) {
+	if fileStoragePath == fileStoragePathDefault {
+		logger.Obtain().Debugf("source %s provided default FileStoragePath value, not overriding", source)
+		return
+	}
+
+	logger.Obtain().Infof("overriding FileStoragePath from %s: (%s)-->(%s)", source, c.FileStoragePath, fileStoragePath)
+	c.FileStoragePath = fileStoragePath
+}
+
+func (c *Config) overrideRestoreIfNotDefault(restore bool, source string) {
+	if restore {
+		logger.Obtain().Debugf("source %s provided default Restore value, not overriding", source)
+		return
+	}
+
+	logger.Obtain().Infof("overriding Restore from %s: (%t)-->(%t)", source, c.Restore, restore)
+	c.Restore = restore
 }

@@ -2,66 +2,61 @@ package models
 
 import "time"
 
-type MetricKey string
-
-func (s MetricKey) String() string {
-	return string(s)
-}
-
-func BuildMetricKey(metricType ScalarMetricType, metricName string) MetricKey {
-	return MetricKey(metricType.String() + ":" + metricName)
-}
-
 type ScalarMetricType string
+
+func (t ScalarMetricType) String() string {
+	return string(t)
+}
 
 const (
 	ScalarMetricTypeCounter ScalarMetricType = "counter"
 	ScalarMetricTypeGauge   ScalarMetricType = "gauge"
 )
 
-func (s ScalarMetricType) String() string {
-	return string(s)
+type ScalarMetricToRegister struct {
+	MName string
+	Mtype ScalarMetricType
+	Val   ScalarMetricValue
 }
 
-type CounterValue int64
-type GaugeValue float64
-
-type ScalarMetricUpdater struct {
-	Type  ScalarMetricType
-	Name  string
-	Value any
+func NewScalarMetricToRegister(name string, val ScalarMetricValue, mtype ScalarMetricType) ScalarMetricToRegister {
+	return ScalarMetricToRegister{
+		MName: name,
+		Val:   val,
+		Mtype: mtype,
+	}
 }
 
-func (su ScalarMetricUpdater) Key() MetricKey {
-	return BuildMetricKey(su.Type, su.Name)
+func (s ScalarMetricToRegister) Key() MetricKey {
+	return BuildMetricKey(s.MName, s.Mtype)
 }
 
-func (su ScalarMetricUpdater) AsCounterValue() CounterValue {
-	if val, ok := su.Value.(CounterValue); ok {
-		return val
-	}
-
-	if rawVal, ok := su.Value.(int64); ok {
-		return CounterValue(rawVal)
-	}
-
-	return CounterValue(0)
+func (s ScalarMetricToRegister) Name() string {
+	return s.MName
 }
 
-func (su ScalarMetricUpdater) AsGaugeValue() GaugeValue {
-	if val, ok := su.Value.(GaugeValue); ok {
-		return val
-	}
+func (s ScalarMetricToRegister) Value() ScalarMetricValue {
+	return s.Val
+}
 
-	if rawVal, ok := su.Value.(float64); ok {
-		return GaugeValue(rawVal)
-	}
+func (s ScalarMetricToRegister) Type() ScalarMetricType {
+	return s.Mtype
+}
 
-	return GaugeValue(0)
+func (s ScalarMetricToRegister) WithValue(v ScalarMetricValue) ScalarMetricToRegister {
+	s.Val = v // local copy only
+	return s
+}
+
+func (s ScalarMetricToRegister) AtDatetime(now time.Time) ScalarMetric {
+	return ScalarMetric{
+		ScalarMetricToRegister: s,
+		Datetime:               now,
+	}
 }
 
 type ScalarMetric struct {
-	ScalarMetricUpdater
+	ScalarMetricToRegister
 	Datetime time.Time
 }
 

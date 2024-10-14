@@ -1,12 +1,15 @@
 package handlers
 
 import (
-	metricstmplt "github.com/aridae/go-metrics-store/static/templates/metrics"
 	"html/template"
 	"net/http"
+
+	metricstmplt "github.com/aridae/go-metrics-store/static/templates/metrics"
 )
 
 func (rt *Router) getAllMetricsHTMLHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+
 	if r.Method != http.MethodGet {
 		http.Error(w, "Only GET requests are allowed.", http.StatusMethodNotAllowed)
 		return
@@ -30,7 +33,4 @@ func (rt *Router) getAllMetricsHTMLHandler(w http.ResponseWriter, r *http.Reques
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	w.Header().Set("Content-Type", "text/html")
-	w.WriteHeader(http.StatusOK)
 }

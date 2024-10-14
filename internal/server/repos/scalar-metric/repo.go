@@ -2,6 +2,7 @@ package scalarmetric
 
 import (
 	"context"
+
 	tsstorage "github.com/aridae/go-metrics-store/pkg/timeseries-storage"
 )
 
