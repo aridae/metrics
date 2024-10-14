@@ -98,7 +98,7 @@ func (c *Config) overrideFileStoragePathIfNotDefault(fileStoragePath string, sou
 }
 
 func (c *Config) overrideRestoreIfNotDefault(restore bool, source string) {
-	if restore == restoreDefault { //nolint:gosimple
+	if restore {
 		logger.Obtain().Debugf("source %s provided default Restore value, not overriding", source)
 		return
 	}
