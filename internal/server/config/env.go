@@ -12,6 +12,7 @@ type environs struct {
 	StoreIntervalSecondsOverride *int64  `env:"STORE_INTERVAL"`
 	FileStoragePathOverride      *string `env:"FILE_STORAGE_PATH"`
 	RestoreOverride              *bool   `env:"RESTORE"`
+	DatabaseDsnOverride          *string `env:"DATABASE_DSN"`
 }
 
 func readEnv() (environs, error) {
@@ -41,5 +42,9 @@ func (e environs) override(cfg *Config) {
 
 	if e.RestoreOverride != nil {
 		cfg.overrideRestoreIfNotDefault(*e.RestoreOverride, "env")
+	}
+
+	if e.DatabaseDsnOverride != nil {
+		cfg.overrideDatabaseDNSIfNotDefault(*e.DatabaseDsnOverride, "env")
 	}
 }

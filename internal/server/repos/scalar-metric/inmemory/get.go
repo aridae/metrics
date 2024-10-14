@@ -1,4 +1,4 @@
-package scalarmetric
+package inmemory
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	tsstorage "github.com/aridae/go-metrics-store/pkg/timeseries-storage"
 )
 
-func (r *Repository) GetLatestState(ctx context.Context, key models.MetricKey) (*models.ScalarMetric, error) {
+func (r *repo) GetLatestState(ctx context.Context, key models.MetricKey) (*models.ScalarMetric, error) {
 	val := r.storage.GetLatest(ctx, tsstorage.Key(key.String()))
 	if val == nil {
 		return nil, nil
@@ -22,7 +22,7 @@ func (r *Repository) GetLatestState(ctx context.Context, key models.MetricKey) (
 	return &scalar, nil
 }
 
-func (r *Repository) GetAllLatestStates(ctx context.Context) ([]models.ScalarMetric, error) {
+func (r *repo) GetAllLatestStates(ctx context.Context) ([]models.ScalarMetric, error) {
 	rawMetrics := r.storage.GetAllLatest(ctx)
 
 	metrics := make([]models.ScalarMetric, 0, len(rawMetrics))

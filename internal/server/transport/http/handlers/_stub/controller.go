@@ -20,3 +20,7 @@ func (stub *ControllerNoErrStub) GetScalarMetricLatestState(ctx context.Context,
 func (stub *ControllerNoErrStub) GetAllScalarMetricsLatestStates(ctx context.Context) ([]models.ScalarMetric, error) {
 	return nil, nil
 }
+
+func (stub *ControllerNoErrStub) Healthcheck(ctx context.Context) error {
+	return nil
+}

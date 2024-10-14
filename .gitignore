@@ -26,3 +26,4 @@ vendor/
 .vscode
 /static/data/
 .data
+/internal/server/repos/scalar-metric/postgres-driven/

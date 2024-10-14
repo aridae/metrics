@@ -1,4 +1,4 @@
-package scalarmetric
+package inmemory
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	tsstorage "github.com/aridae/go-metrics-store/pkg/timeseries-storage"
 )
 
-func (r *Repository) Save(ctx context.Context, metric models.ScalarMetric) error {
+func (r *repo) Save(ctx context.Context, metric models.ScalarMetric) error {
 	key := metric.Key().String()
 
 	r.storage.Save(ctx, tsstorage.Key(key), metric)
