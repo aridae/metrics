@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	scalarmetricinmem "github.com/aridae/go-metrics-store/internal/server/repos/scalar-metric/inmemory"
-	"github.com/aridae/go-metrics-store/pkg/postgres"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,9 +10,11 @@ import (
 	"github.com/aridae/go-metrics-store/internal/server/logger"
 	"github.com/aridae/go-metrics-store/internal/server/models"
 	"github.com/aridae/go-metrics-store/internal/server/mw"
+	scalarmetricinmem "github.com/aridae/go-metrics-store/internal/server/repos/scalar-metric/inmemory"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers"
 	"github.com/aridae/go-metrics-store/internal/server/usecases"
+	"github.com/aridae/go-metrics-store/pkg/postgres"
 	tsstorage "github.com/aridae/go-metrics-store/pkg/timeseries-storage"
 )
 

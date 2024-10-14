@@ -2,6 +2,7 @@ package inmemory
 
 import (
 	"context"
+
 	"github.com/aridae/go-metrics-store/internal/server/logger"
 	scalarmetric "github.com/aridae/go-metrics-store/internal/server/repos/scalar-metric"
 	tsstorage "github.com/aridae/go-metrics-store/pkg/timeseries-storage"

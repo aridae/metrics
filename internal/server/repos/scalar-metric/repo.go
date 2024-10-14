@@ -2,6 +2,7 @@ package scalarmetric
 
 import (
 	"context"
+
 	"github.com/aridae/go-metrics-store/internal/server/models"
 )
 

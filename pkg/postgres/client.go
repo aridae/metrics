@@ -3,10 +3,11 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/aridae/go-metrics-store/internal/server/logger"
 	"github.com/jackc/pgx"
 	_ "github.com/jackc/pgx"
-	"time"
 )
 
 // Client replaceable pgx wrapper
