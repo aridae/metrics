@@ -40,6 +40,10 @@ func NewClient(dsn string, maxOpenConn int) (*Client, error) {
 }
 
 func (c *Client) Healthcheck(ctx context.Context) error {
+	if c == nil {
+		return fmt.Errorf("nil client receiver")
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, c.healthCheckTimeout)
 	defer cancel()
 

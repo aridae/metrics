@@ -2,6 +2,7 @@ package inmemory
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/aridae/go-metrics-store/internal/server/logger"
 	scalarmetric "github.com/aridae/go-metrics-store/internal/server/repos/scalar-metric"
@@ -23,6 +24,10 @@ func NewRepositoryImplementation(storage timeseriesStorage) scalarmetric.Reposit
 }
 
 func (r *repo) Healthcheck(_ context.Context) error {
+	if r == nil {
+		return fmt.Errorf("nil repo receiver")
+	}
+
 	logger.Obtain().Infof("inmemory.repo is rather healthy!")
 	return nil
 }

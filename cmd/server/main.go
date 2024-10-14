@@ -35,7 +35,10 @@ func main() {
 
 	cnf := config.Obtain()
 
-	pgClient := mustInitPostgresClient(ctx, cnf)
+	var pgClient *postgres.Client
+	if cnf.DatabaseDsn != "" {
+		pgClient = mustInitPostgresClient(ctx, cnf)
+	}
 
 	memStore := mustInitMemStore(ctx, cnf)
 
