@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/aridae/go-metrics-store/internal/server/config"
 	"github.com/aridae/go-metrics-store/internal/server/logger"
@@ -89,7 +90,9 @@ func mustInitMemStore(ctx context.Context, cnf *config.Config) *tsstorage.MemTim
 }
 
 func mustInitPostgresClient(ctx context.Context, cnf *config.Config) *postgres.Client {
-	client, err := postgres.NewClient(ctx, cnf.DatabaseDsn)
+	client, err := postgres.NewClient(ctx, cnf.DatabaseDsn,
+		postgres.WithInitialReconnectBackoffOnFail(time.Second),
+	)
 	if err != nil {
 		logger.Obtain().Fatalf("failed to init postgres client: %v", err)
 	}

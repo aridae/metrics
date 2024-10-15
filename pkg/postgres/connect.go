@@ -14,15 +14,7 @@ func (c *Client) connectWithBackoff(ctx context.Context, maxRetriesCount int64) 
 	tryConnectAfter := time.NewTimer(c.initialReconnectBackoff)
 
 	for {
-		select {
-		case <-ctx.Done():
-			logger.Obtain().Infof("stopping connectWithBackoff loop due to context cancel")
-			return nil
-		case <-tryConnectAfter.C:
-		}
-
 		err := c.connect(ctx)
-
 		if err == nil {
 			logger.Obtain().Debugf("successfully connected to postgres, happily exiting connectWithBackoff loop")
 			return nil
@@ -31,13 +23,18 @@ func (c *Client) connectWithBackoff(ctx context.Context, maxRetriesCount int64) 
 		if triesLeft == 0 {
 			return fmt.Errorf("maximum reconnection tries reached, connectWithBackoff loop terminating with error: %w", err)
 		}
-
 		triesLeft--
-		tryConnectInterval *= 2
-		tryConnectAfter.Reset(tryConnectInterval)
 
 		logger.Obtain().Errorf("error connecting to postgres: %v, will try again after %s", err, tryConnectInterval)
-		continue
+
+		select {
+		case <-ctx.Done():
+			logger.Obtain().Infof("stopping connectWithBackoff loop due to context cancel")
+			return nil
+		case <-tryConnectAfter.C:
+			tryConnectInterval *= 2
+			tryConnectAfter.Reset(tryConnectInterval)
+		}
 	}
 }
 
