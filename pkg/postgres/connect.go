@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/aridae/go-metrics-store/internal/server/logger"
-	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"time"
 )
 
@@ -38,13 +38,9 @@ func (c *Client) connectWithBackoff(ctx context.Context, maxRetriesCount int64) 
 	}
 }
 
-func (c *Client) connect(_ context.Context) error {
+func (c *Client) connect(ctx context.Context) error {
 	var err error
-	c.ConnPool, err = pgx.NewConnPool(pgx.ConnPoolConfig{
-		ConnConfig:     c.connCnf,
-		MaxConnections: c.poolMaxConnections,
-		AcquireTimeout: c.poolAcquireTimeout,
-	})
+	c.Pool, err = pgxpool.NewWithConfig(ctx, c.connCnf)
 	if err != nil {
 		return fmt.Errorf("could not connect to postgres: %w", err)
 	}

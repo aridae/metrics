@@ -3,22 +3,20 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"time"
-
-	"github.com/jackc/pgx"
 )
 
 // Client replaceable pgx wrapper
 type Client struct {
-	connCnf pgx.ConnConfig
-
+	connCnf                 *pgxpool.Config
 	initialReconnectBackoff time.Duration
 	healthcheckTimeout      time.Duration
 
 	poolAcquireTimeout time.Duration
 	poolMaxConnections int
 
-	*pgx.ConnPool
+	*pgxpool.Pool
 }
 
 var defaultOpts = opts{
@@ -31,9 +29,9 @@ var defaultOpts = opts{
 func NewClient(ctx context.Context, dsn string, opts ...Option) (*Client, error) {
 	options := evalOptions(opts...)
 
-	connConfig, err := pgx.ParseDSN(dsn)
+	connConfig, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
-		return nil, fmt.Errorf("pgx.ParseDSN: %w", err)
+		return nil, fmt.Errorf("\tconnCnf pgxpool.ConnConfig\n.ParseDSN: %w", err)
 	}
 
 	client := &Client{
