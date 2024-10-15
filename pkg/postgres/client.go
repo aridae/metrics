@@ -42,7 +42,10 @@ func NewClient(ctx context.Context, dsn string, opts ...Option) (*Client, error)
 		poolMaxConnections:      options.poolMaxConnections,
 	}
 
-	go client.connectWithBackoff(ctx, 90)
+	err = client.connectWithBackoff(ctx, 5)
+	if err != nil {
+		return nil, err
+	}
 
 	return client, nil
 }

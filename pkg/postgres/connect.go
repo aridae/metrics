@@ -32,7 +32,7 @@ func (c *Client) connectWithBackoff(ctx context.Context, maxRetriesCount int64) 
 			logger.Obtain().Infof("stopping connectWithBackoff loop due to context cancel")
 			return nil
 		case <-tryConnectAfter.C:
-			//tryConnectInterval *= 2
+			tryConnectInterval *= 2
 			tryConnectAfter.Reset(tryConnectInterval)
 		}
 	}
