@@ -5,52 +5,49 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aridae/go-metrics-store/internal/server/logger"
 	"github.com/jackc/pgx"
 )
 
 // Client replaceable pgx wrapper
 type Client struct {
+	connCnf pgx.ConnConfig
+
+	initialReconnectBackoff time.Duration
+	healthcheckTimeout      time.Duration
+
+	poolAcquireTimeout time.Duration
+	poolMaxConnections int
+
 	*pgx.ConnPool
-	healthCheckTimeout time.Duration
 }
 
-func NewClient(dsn string, maxOpenConn int) (*Client, error) {
+var defaultOpts = opts{
+	initialReconnectBackoff: 15 * time.Second,
+	healthcheckTimeout:      5 * time.Second,
+	poolAcquireTimeout:      5 * time.Second,
+	poolMaxConnections:      15,
+}
+
+func NewClient(ctx context.Context, dsn string, opts ...Option) (*Client, error) {
+	options := evalOptions(opts...)
+
 	connConfig, err := pgx.ParseDSN(dsn)
 	if err != nil {
 		return nil, fmt.Errorf("pgx.ParseDSN: %w", err)
 	}
 
-	defaultTimeout := time.Second * 3
+	client := &Client{
+		connCnf:                 connConfig,
+		initialReconnectBackoff: options.initialReconnectBackoff,
+		healthcheckTimeout:      options.healthcheckTimeout,
+		poolAcquireTimeout:      options.poolAcquireTimeout,
+		poolMaxConnections:      options.poolMaxConnections,
+	}
 
-	conn, err := pgx.NewConnPool(pgx.ConnPoolConfig{
-		ConnConfig:     connConfig,
-		MaxConnections: maxOpenConn,
-		AfterConnect: func(conn *pgx.Conn) error {
-			logger.Obtain().Debugf("got new connection pid=%d", conn.PID())
-			return nil
-		},
-		AcquireTimeout: defaultTimeout,
-	})
+	err = client.connectWithBackoff(ctx, 3)
 	if err != nil {
-		return nil, fmt.Errorf("pgx.NewConnPool: %w", err)
+		return nil, fmt.Errorf("client.connectWithBackoff: %w", err)
 	}
 
-	return &Client{ConnPool: conn, healthCheckTimeout: defaultTimeout}, nil
-}
-
-func (c *Client) Healthcheck(ctx context.Context) error {
-	if c == nil {
-		return fmt.Errorf("nil client receiver")
-	}
-
-	ctx, cancel := context.WithTimeout(ctx, c.healthCheckTimeout)
-	defer cancel()
-
-	_, err := c.ConnPool.ExecEx(ctx, ";", nil)
-	if err != nil {
-		return fmt.Errorf("postgres Connection Pool seems to be unreachable, ExecEx: %w", err)
-	}
-
-	return nil
+	return client, nil
 }

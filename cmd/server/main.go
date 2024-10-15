@@ -88,8 +88,8 @@ func mustInitMemStore(ctx context.Context, cnf *config.Config) *tsstorage.MemTim
 	return memStore
 }
 
-func mustInitPostgresClient(_ context.Context, cnf *config.Config) *postgres.Client {
-	client, err := postgres.NewClient(cnf.DatabaseDsn, cnf.DatabaseMaxOpenConn)
+func mustInitPostgresClient(ctx context.Context, cnf *config.Config) *postgres.Client {
+	client, err := postgres.NewClient(ctx, cnf.DatabaseDsn)
 	if err != nil {
 		logger.Obtain().Fatalf("failed to init postgres client: %v", err)
 	}
