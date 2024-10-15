@@ -13,9 +13,9 @@ func (c *Client) Healthcheck(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, c.healthcheckTimeout)
 	defer cancel()
 
-	_, err := c.Pool.Exec(ctx, ";", nil)
+	err := c.Pool.Ping(ctx)
 	if err != nil {
-		return fmt.Errorf("postgres Connection Pool seems to be unreachable, ExecEx: %w", err)
+		return fmt.Errorf("postgres Connection Pool seems to be unreachable, Ping failed: %w", err)
 	}
 
 	return nil
