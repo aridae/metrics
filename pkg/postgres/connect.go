@@ -8,20 +8,25 @@ import (
 	"time"
 )
 
-func (c *Client) connectWithBackoff(ctx context.Context, maxRetriesCount int64) error {
+func connectWithBackoff(
+	ctx context.Context,
+	cnf *pgxpool.Config,
+	maxRetriesCount int64,
+	initialReconnectBackoff time.Duration,
+) (*pgxpool.Pool, error) {
 	triesLeft := maxRetriesCount
-	tryConnectInterval := c.initialReconnectBackoff
-	tryConnectAfter := time.NewTimer(c.initialReconnectBackoff)
+	tryConnectInterval := initialReconnectBackoff
+	tryConnectAfter := time.NewTimer(initialReconnectBackoff)
 
 	for {
-		err := c.connect(ctx)
+		pool, err := connect(ctx, cnf)
 		if err == nil {
 			logger.Obtain().Debugf("successfully connected to postgres, happily exiting connectWithBackoff loop")
-			return nil
+			return pool, nil
 		}
 
 		if triesLeft == 0 {
-			return fmt.Errorf("maximum reconnection tries reached, connectWithBackoff loop terminating with error: %w", err)
+			return nil, fmt.Errorf("maximum reconnection tries reached, connectWithBackoff loop terminating with error: %w", err)
 		}
 		triesLeft--
 
@@ -29,8 +34,7 @@ func (c *Client) connectWithBackoff(ctx context.Context, maxRetriesCount int64) 
 
 		select {
 		case <-ctx.Done():
-			logger.Obtain().Infof("stopping connectWithBackoff loop due to context cancel")
-			return nil
+			return nil, fmt.Errorf("terminating connectWithBackoff loop due to context cancel: %w", ctx.Err())
 		case <-tryConnectAfter.C:
 			tryConnectInterval *= 2
 			tryConnectAfter.Reset(tryConnectInterval)
@@ -38,12 +42,11 @@ func (c *Client) connectWithBackoff(ctx context.Context, maxRetriesCount int64) 
 	}
 }
 
-func (c *Client) connect(ctx context.Context) error {
-	var err error
-	c.Pool, err = pgxpool.NewWithConfig(ctx, c.connCnf)
+func connect(ctx context.Context, config *pgxpool.Config) (*pgxpool.Pool, error) {
+	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
-		return fmt.Errorf("could not connect to postgres: %w", err)
+		return nil, fmt.Errorf("could not connect to postgres pgx pool: %w", err)
 	}
 
-	return nil
+	return pool, nil
 }

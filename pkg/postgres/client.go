@@ -9,21 +9,13 @@ import (
 
 // Client replaceable pgx wrapper
 type Client struct {
-	connCnf                 *pgxpool.Config
-	initialReconnectBackoff time.Duration
-	healthcheckTimeout      time.Duration
-
-	poolAcquireTimeout time.Duration
-	poolMaxConnections int
-
+	healthcheckTimeout time.Duration
 	*pgxpool.Pool
 }
 
 var defaultOpts = opts{
-	initialReconnectBackoff: 15 * time.Second,
+	initialReconnectBackoff: 1 * time.Second,
 	healthcheckTimeout:      5 * time.Second,
-	poolAcquireTimeout:      5 * time.Second,
-	poolMaxConnections:      15,
 }
 
 func NewClient(ctx context.Context, dsn string, opts ...Option) (*Client, error) {
@@ -31,21 +23,16 @@ func NewClient(ctx context.Context, dsn string, opts ...Option) (*Client, error)
 
 	connConfig, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
-		return nil, fmt.Errorf("\tconnCnf pgxpool.ConnConfig\n.ParseDSN: %w", err)
+		return nil, fmt.Errorf("pgxpool.ParseConfig: %w", err)
 	}
 
-	client := &Client{
-		connCnf:                 connConfig,
-		initialReconnectBackoff: options.initialReconnectBackoff,
-		healthcheckTimeout:      options.healthcheckTimeout,
-		poolAcquireTimeout:      options.poolAcquireTimeout,
-		poolMaxConnections:      options.poolMaxConnections,
-	}
-
-	err = client.connectWithBackoff(ctx, 5)
+	pool, err := connectWithBackoff(ctx, connConfig, 5, options.initialReconnectBackoff)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("connectWithBackoff: %w", err)
 	}
 
-	return client, nil
+	return &Client{
+		healthcheckTimeout: options.healthcheckTimeout,
+		Pool:               pool,
+	}, nil
 }
