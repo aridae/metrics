@@ -15,10 +15,5 @@ func (c *Controller) Healthcheck(ctx context.Context) error {
 		return fmt.Errorf("Controller.metricsRepo is unavailable: %w", repoHealthcheckErr)
 	}
 
-	pgHealthcheckErr := c.postgresConn.Healthcheck(ctx)
-	if pgHealthcheckErr != nil {
-		return fmt.Errorf("Controller.postgresConn is unavailable: %w", pgHealthcheckErr)
-	}
-
 	return nil
 }

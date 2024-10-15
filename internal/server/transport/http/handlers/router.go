@@ -71,9 +71,9 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func resolveMetricFactoryForMetricType(metricType string) (metricsfabrics.ScalarMetricFactory, error) {
 	switch metricType {
 	case counter:
-		return metricsfabrics.NewCounterMetricFactory(), nil
+		return metricsfabrics.ObtainCounterMetricFactory(), nil
 	case gauge:
-		return metricsfabrics.NewGaugeMetricFactory(), nil
+		return metricsfabrics.ObtainGaugeMetricFactory(), nil
 	default:
 		return nil, fmt.Errorf("unknown metric type: %s", metricType)
 	}

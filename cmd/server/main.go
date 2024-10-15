@@ -11,7 +11,9 @@ import (
 	"github.com/aridae/go-metrics-store/internal/server/logger"
 	"github.com/aridae/go-metrics-store/internal/server/models"
 	"github.com/aridae/go-metrics-store/internal/server/mw"
+	scalarmetric "github.com/aridae/go-metrics-store/internal/server/repos/scalar-metric"
 	scalarmetricinmem "github.com/aridae/go-metrics-store/internal/server/repos/scalar-metric/inmemory"
+	sclarmetricpg "github.com/aridae/go-metrics-store/internal/server/repos/scalar-metric/postgres"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers"
 	"github.com/aridae/go-metrics-store/internal/server/usecases"
@@ -36,16 +38,9 @@ func main() {
 
 	cnf := config.Obtain()
 
-	var pgClient *postgres.Client
-	if cnf.DatabaseDsn != "" {
-		pgClient = mustInitPostgresClient(ctx, cnf)
-	}
+	repo := mustInitRepo(ctx, cnf)
 
-	memStore := mustInitMemStore(ctx, cnf)
-
-	metricsRepo := scalarmetricinmem.NewRepositoryImplementation(memStore)
-
-	useCaseController := usecases.NewController(metricsRepo, pgClient)
+	useCaseController := usecases.NewController(repo)
 
 	httpRouter := handlers.NewRouter(useCaseController)
 
@@ -98,4 +93,19 @@ func mustInitPostgresClient(ctx context.Context, cnf *config.Config) *postgres.C
 	}
 
 	return client
+}
+
+func mustInitRepo(ctx context.Context, cnf *config.Config) scalarmetric.Repository {
+	if cnf.DatabaseDsn == "" {
+		memStore := mustInitMemStore(ctx, cnf)
+		return scalarmetricinmem.NewRepositoryImplementation(memStore)
+	}
+
+	pgClient := mustInitPostgresClient(ctx, cnf)
+	repo, err := sclarmetricpg.NewRepositoryImplementation(ctx, pgClient)
+	if err != nil {
+		logger.Obtain().Fatalf("failed to init repo: %v", err)
+	}
+
+	return repo
 }

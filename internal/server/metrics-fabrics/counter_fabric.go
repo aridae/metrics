@@ -3,15 +3,25 @@ package metricsfabrics
 import (
 	"fmt"
 	"strconv"
+	"sync"
 
 	metricsupsertstrategies "github.com/aridae/go-metrics-store/internal/server/metrics-upsert-strategies"
 	"github.com/aridae/go-metrics-store/internal/server/models"
 )
 
+var (
+	_counterFactory *counterMetricFactory
+	_counterOnce    sync.Once
+)
+
 type counterMetricFactory struct{}
 
-func NewCounterMetricFactory() ScalarMetricFactory {
-	return &counterMetricFactory{}
+func ObtainCounterMetricFactory() ScalarMetricFactory {
+	_counterOnce.Do(func() {
+		_counterFactory = &counterMetricFactory{}
+	})
+
+	return _counterFactory
 }
 
 func (f *counterMetricFactory) CreateMetricKey(metricName string) models.MetricKey {

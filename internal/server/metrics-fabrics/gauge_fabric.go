@@ -3,15 +3,25 @@ package metricsfabrics
 import (
 	"fmt"
 	"strconv"
+	"sync"
 
 	metricsupsertstrategies "github.com/aridae/go-metrics-store/internal/server/metrics-upsert-strategies"
 	"github.com/aridae/go-metrics-store/internal/server/models"
 )
 
+var (
+	_gaugeFactory *gaugeMetricFactory
+	_gaugeOnce    sync.Once
+)
+
 type gaugeMetricFactory struct{}
 
-func NewGaugeMetricFactory() ScalarMetricFactory {
-	return &gaugeMetricFactory{}
+func ObtainGaugeMetricFactory() ScalarMetricFactory {
+	_gaugeOnce.Do(func() {
+		_gaugeFactory = &gaugeMetricFactory{}
+	})
+
+	return _gaugeFactory
 }
 
 func (f *gaugeMetricFactory) CreateMetricKey(name string) models.MetricKey {

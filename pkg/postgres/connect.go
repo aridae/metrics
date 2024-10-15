@@ -3,9 +3,10 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/aridae/go-metrics-store/internal/server/logger"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"time"
 )
 
 func connectWithBackoff(

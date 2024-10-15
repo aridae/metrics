@@ -1,16 +1,42 @@
-package inmemory
+package postgres
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/aridae/go-metrics-store/internal/server/models"
-	tsstorage "github.com/aridae/go-metrics-store/pkg/timeseries-storage"
 )
 
 func (r *repo) Save(ctx context.Context, metric models.ScalarMetric) error {
-	key := metric.Key().String()
+	onConflict := fmt.Sprintf("ON CONFLICT(%s) DO UPDATE SET %s = EXCLUDED.%s, %s = EXCLUDED.%s;",
+		keyColumn, valueColumn, valueColumn, datetimeColumn, datetimeColumn)
 
-	r.storage.Save(ctx, tsstorage.Key(key), metric)
+	qb := psql.Insert(metricTable).
+		Columns(
+			keyColumn,
+			typeColumn,
+			nameColumn,
+			valueColumn,
+			datetimeColumn,
+		).
+		Values(
+			metric.Key().String(),
+			metric.Type().String(),
+			metric.Name(),
+			metric.Value().String(),
+			metric.Datetime,
+		).
+		Suffix(onConflict)
+
+	sql, args, err := qb.ToSql()
+	if err != nil {
+		return fmt.Errorf("failed to build query: %w", err)
+	}
+
+	_, err = r.db.Exec(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("failed to run Exec: %w", err)
+	}
 
 	return nil
 }

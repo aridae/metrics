@@ -19,18 +19,15 @@ type metricsRepo interface {
 }
 
 type Controller struct {
-	metricsRepo  metricsRepo
-	postgresConn healthcheckable
-	now          func() time.Time
+	metricsRepo metricsRepo
+	now         func() time.Time
 }
 
 func NewController(
 	metricsRepo metricsRepo,
-	postgresConn healthcheckable,
 ) *Controller {
 	return &Controller{
-		metricsRepo:  metricsRepo,
-		postgresConn: postgresConn,
+		metricsRepo: metricsRepo,
 		now: func() time.Time {
 			return time.Now().UTC()
 		},

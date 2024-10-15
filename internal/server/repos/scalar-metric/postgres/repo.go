@@ -1,33 +1,41 @@
-package inmemory
+package postgres
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/aridae/go-metrics-store/internal/server/logger"
 	scalarmetric "github.com/aridae/go-metrics-store/internal/server/repos/scalar-metric"
-	tsstorage "github.com/aridae/go-metrics-store/pkg/timeseries-storage"
+	"github.com/aridae/go-metrics-store/pkg/postgres"
 )
 
-type timeseriesStorage interface {
-	Save(ctx context.Context, key tsstorage.Key, value tsstorage.TimeseriesValue)
-	GetLatest(ctx context.Context, key tsstorage.Key) tsstorage.TimeseriesValue
-	GetAllLatest(ctx context.Context) []tsstorage.TimeseriesValue
-}
-
 type repo struct {
-	storage timeseriesStorage
+	db *postgres.Client
 }
 
-func NewRepositoryImplementation(storage timeseriesStorage) scalarmetric.Repository {
-	return &repo{storage: storage}
+func NewRepositoryImplementation(ctx context.Context, pgClient *postgres.Client) (scalarmetric.Repository, error) {
+	imp := &repo{db: pgClient}
+
+	err := imp.prepareSchema(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare schema: %w", err)
+	}
+
+	return imp, nil
 }
 
-func (r *repo) Healthcheck(_ context.Context) error {
+func (r *repo) Healthcheck(ctx context.Context) error {
 	if r == nil {
 		return fmt.Errorf("nil repo receiver")
 	}
 
-	logger.Obtain().Infof("inmemory.repo is rather healthy!")
+	return r.db.Healthcheck(ctx)
+}
+
+func (r *repo) prepareSchema(ctx context.Context) error {
+	_, err := r.db.Exec(ctx, schemaDDL)
+	if err != nil {
+		return fmt.Errorf("executing schema ddl: %w", err)
+	}
+
 	return nil
 }
