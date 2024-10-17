@@ -41,7 +41,7 @@ func main() {
 	var repo scalarmetric.Repository
 	var routerOptions []handlers.RouterOption
 
-	if cnf.DatabaseDsn == "" {
+	if cnf.DatabaseDsn != "" {
 		pgClient := mustInitPostgresClient(ctx, cnf)
 
 		var err error
