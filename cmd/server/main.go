@@ -38,11 +38,29 @@ func main() {
 
 	cnf := config.Obtain()
 
-	repo := mustInitRepo(ctx, cnf)
+	var repo scalarmetric.Repository
+	var routerOptions []handlers.RouterOption
+
+	if cnf.DatabaseDsn == "" {
+		pgClient := mustInitPostgresClient(ctx, cnf)
+
+		var err error
+		repo, err = sclarmetricpg.NewRepositoryImplementation(ctx, pgClient)
+		if err != nil {
+			logger.Obtain().Fatalf("failed to init repo: %v", err)
+		}
+
+		routerOptions = append(routerOptions, handlers.CheckAvailableOnPing(pgClient))
+	}
+
+	if repo == nil {
+		memStore := mustInitMemStore(ctx, cnf)
+		repo = scalarmetricinmem.NewRepositoryImplementation(memStore)
+	}
 
 	useCaseController := usecases.NewController(repo)
 
-	httpRouter := handlers.NewRouter(useCaseController)
+	httpRouter := handlers.NewRouter(useCaseController, routerOptions...)
 
 	httpServer := http.NewServer(cnf.Address, httpRouter,
 		mw.LoggingMiddleware,
@@ -93,19 +111,4 @@ func mustInitPostgresClient(ctx context.Context, cnf *config.Config) *postgres.C
 	}
 
 	return client
-}
-
-func mustInitRepo(ctx context.Context, cnf *config.Config) scalarmetric.Repository {
-	if cnf.DatabaseDsn == "" {
-		memStore := mustInitMemStore(ctx, cnf)
-		return scalarmetricinmem.NewRepositoryImplementation(memStore)
-	}
-
-	pgClient := mustInitPostgresClient(ctx, cnf)
-	repo, err := sclarmetricpg.NewRepositoryImplementation(ctx, pgClient)
-	if err != nil {
-		logger.Obtain().Fatalf("failed to init repo: %v", err)
-	}
-
-	return repo
 }

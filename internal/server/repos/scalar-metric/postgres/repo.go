@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"fmt"
-
 	scalarmetric "github.com/aridae/go-metrics-store/internal/server/repos/scalar-metric"
 	"github.com/aridae/go-metrics-store/pkg/postgres"
 )
@@ -21,14 +20,6 @@ func NewRepositoryImplementation(ctx context.Context, pgClient *postgres.Client)
 	}
 
 	return imp, nil
-}
-
-func (r *repo) Healthcheck(ctx context.Context) error {
-	if r == nil {
-		return fmt.Errorf("nil repo receiver")
-	}
-
-	return r.db.Healthcheck(ctx)
 }
 
 func (r *repo) prepareSchema(ctx context.Context) error {

@@ -30,37 +30,51 @@ var (
 	pingHandlerURLPath                    = "/ping"
 )
 
+type pingable interface {
+	Ping(context.Context) error
+}
+
 type useCasesController interface {
 	UpsertScalarMetric(ctx context.Context, metricToRegister models.ScalarMetricToRegister, strategy metricsupsertstrategies.Strategy) (models.ScalarMetric, error)
 	GetScalarMetricLatestState(ctx context.Context, metricKey models.MetricKey) (*models.ScalarMetric, error)
 	GetAllScalarMetricsLatestStates(ctx context.Context) ([]models.ScalarMetric, error)
-	Healthcheck(ctx context.Context) error
 }
 
 type Router struct {
 	useCasesController useCasesController
 	httpMux            *chi.Mux
+
+	checkIfAvailableOnPing []pingable
 }
 
-func NewRouter(useCasesController useCasesController) *Router {
+func NewRouter(useCasesController useCasesController, options ...RouterOption) *Router {
+	opts := new(routerOpts)
+	for _, applyOption := range options {
+		applyOption(opts)
+	}
+
 	chiMux := chi.NewRouter()
 
 	router := &Router{
-		useCasesController: useCasesController,
-		httpMux:            chiMux,
+		useCasesController:     useCasesController,
+		httpMux:                chiMux,
+		checkIfAvailableOnPing: opts.checkAvailableOnPing,
 	}
 
 	chiMux.HandleFunc(updateMetricWithJSONBodyURLPath, router.updateMetricJSONHandler)
-	chiMux.HandleFunc(getMetricWithJSONBodyURLPath, router.getMetricJSONHandler)
 	chiMux.HandleFunc(updateMetricWithJSONBodyURLPath+"/", router.updateMetricJSONHandler) // trailing slash
-	chiMux.HandleFunc(getMetricWithJSONBodyURLPath+"/", router.getMetricJSONHandler)       // trailing slash
-	chiMux.HandleFunc(pingHandlerURLPath, router.pingHandler)
-	chiMux.HandleFunc(pingHandlerURLPath+"/", router.pingHandler) // trailing slash
 
 	chiMux.HandleFunc(updateMetricsBatchWithJSONBodyURLPath, router.updateMetricsBatchJSONHandler)
 	chiMux.HandleFunc(updateMetricsBatchWithJSONBodyURLPath+"/", router.updateMetricsBatchJSONHandler) // trailing slash
 
 	chiMux.HandleFunc(updateMetricWithURLParamsValueURLPath, router.updateMetricByURLPathHandler)
+
+	chiMux.HandleFunc(getMetricWithJSONBodyURLPath, router.getMetricJSONHandler)
+	chiMux.HandleFunc(getMetricWithJSONBodyURLPath+"/", router.getMetricJSONHandler) // trailing slash
+
+	chiMux.HandleFunc(pingHandlerURLPath, router.pingHandler)
+	chiMux.HandleFunc(pingHandlerURLPath+"/", router.pingHandler) // trailing slash
+
 	chiMux.HandleFunc(getMetricValueURLPath, router.getMetricByURLPathHandler)
 
 	chiMux.HandleFunc(getAllMetricValuesURLPath, router.getAllMetricsHTMLHandler)
@@ -80,5 +94,17 @@ func resolveMetricFactoryForMetricType(metricType string) (metricsfabrics.Scalar
 		return metricsfabrics.ObtainGaugeMetricFactory(), nil
 	default:
 		return nil, fmt.Errorf("unknown metric type: %s", metricType)
+	}
+}
+
+type routerOpts struct {
+	checkAvailableOnPing []pingable
+}
+
+type RouterOption func(opts *routerOpts)
+
+func CheckAvailableOnPing(dep pingable) RouterOption {
+	return func(opts *routerOpts) {
+		opts.checkAvailableOnPing = append(opts.checkAvailableOnPing, dep)
 	}
 }
