@@ -1,4 +1,4 @@
-package postgres
+package metricpgrepo
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/georgysavva/scany/v2/pgxscan"
 )
 
-func (r *repo) GetLatestState(ctx context.Context, key models.MetricKey) (*models.ScalarMetric, error) {
+func (r *repo) GetByKey(ctx context.Context, key models.MetricKey) (*models.Metric, error) {
 	qb := baseSelectQuery.Where(squirrel.Eq{keyColumn: key.String()})
 
 	sql, args, err := qb.ToSql()
@@ -22,10 +22,10 @@ func (r *repo) GetLatestState(ctx context.Context, key models.MetricKey) (*model
 		return nil, fmt.Errorf("failed to query: %w", err)
 	}
 
-	var dtos []dto
+	var dtos []metricDTO
 	err = pgxscan.ScanAll(&dtos, rows)
 	if err != nil {
-		return nil, fmt.Errorf("failed to scan row into dto: %w", err)
+		return nil, fmt.Errorf("failed to scan row into metricDTO: %w", err)
 	}
 
 	if len(dtos) == 0 {
@@ -35,13 +35,13 @@ func (r *repo) GetLatestState(ctx context.Context, key models.MetricKey) (*model
 	d := dtos[0]
 	metric, err := parseDTO(d)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse dto into metric business model: %w", err)
+		return nil, fmt.Errorf("failed to parse metricDTO into metric business model: %w", err)
 	}
 
 	return &metric, nil
 }
 
-func (r *repo) GetAllLatestStates(ctx context.Context) ([]models.ScalarMetric, error) {
+func (r *repo) GetAll(ctx context.Context) ([]models.Metric, error) {
 	qb := baseSelectQuery.OrderBy(keyColumn)
 
 	sql, args, err := qb.ToSql()
@@ -54,7 +54,7 @@ func (r *repo) GetAllLatestStates(ctx context.Context) ([]models.ScalarMetric, e
 		return nil, fmt.Errorf("failed to query: %w", err)
 	}
 
-	var dtos []dto
+	var dtos []metricDTO
 	err = pgxscan.ScanAll(&dtos, rows)
 	if err != nil {
 		return nil, fmt.Errorf("failed to scan rows into dtos: %w", err)

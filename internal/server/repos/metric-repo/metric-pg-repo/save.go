@@ -1,4 +1,4 @@
-package postgres
+package metricpgrepo
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/aridae/go-metrics-store/internal/server/models"
 )
 
-func (r *repo) Save(ctx context.Context, metric models.ScalarMetric) error {
+func (r *repo) Save(ctx context.Context, metric models.Metric) error {
 	onConflict := fmt.Sprintf("ON CONFLICT(%s) DO UPDATE SET %s = EXCLUDED.%s, %s = EXCLUDED.%s;",
 		keyColumn, valueColumn, valueColumn, datetimeColumn, datetimeColumn)
 
@@ -20,10 +20,10 @@ func (r *repo) Save(ctx context.Context, metric models.ScalarMetric) error {
 			datetimeColumn,
 		).
 		Values(
-			metric.Key().String(),
-			metric.Type().String(),
-			metric.Name(),
-			metric.Value().String(),
+			metric.GetKey().String(),
+			metric.GetType().String(),
+			metric.GetName(),
+			metric.GetValue().String(),
 			metric.Datetime,
 		).
 		Suffix(onConflict)

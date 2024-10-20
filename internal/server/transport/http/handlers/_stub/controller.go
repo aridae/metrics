@@ -2,25 +2,23 @@ package _stub
 
 import (
 	"context"
-
-	metricsupsertstrategies "github.com/aridae/go-metrics-store/internal/server/metrics-upsert-strategies"
 	"github.com/aridae/go-metrics-store/internal/server/models"
 )
 
 type ControllerNoErrStub struct{}
 
-func (stub *ControllerNoErrStub) UpsertScalarMetric(ctx context.Context, metricToRegister models.ScalarMetricToRegister, strategy metricsupsertstrategies.Strategy) (models.ScalarMetric, error) {
-	return models.ScalarMetric{}, nil
+func (stub *ControllerNoErrStub) UpsertMetric(ctx context.Context, metricToRegister models.MetricUpsert) (models.Metric, error) {
+	return models.Metric{}, nil
 }
 
-func (stub *ControllerNoErrStub) GetScalarMetricLatestState(ctx context.Context, metricKey models.MetricKey) (*models.ScalarMetric, error) {
+func (stub *ControllerNoErrStub) UpsertMetricsBatch(ctx context.Context, metricToRegister []models.MetricUpsert) ([]models.Metric, error) {
 	return nil, nil
 }
 
-func (stub *ControllerNoErrStub) GetAllScalarMetricsLatestStates(ctx context.Context) ([]models.ScalarMetric, error) {
+func (stub *ControllerNoErrStub) GetMetricByKey(ctx context.Context, metricKey models.MetricKey) (*models.Metric, error) {
 	return nil, nil
 }
 
-func (stub *ControllerNoErrStub) Healthcheck(ctx context.Context) error {
-	return nil
+func (stub *ControllerNoErrStub) GetAllMetrics(ctx context.Context) ([]models.Metric, error) {
+	return nil, nil
 }

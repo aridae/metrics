@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/aridae/go-metrics-store/pkg/slice"
 	"net/http"
 
 	httpmodels "github.com/aridae/go-metrics-store/internal/server/transport/http/models"
@@ -14,8 +15,8 @@ func (rt *Router) updateMetricsBatchJSONHandler(w http.ResponseWriter, r *http.R
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-
 	ctx := r.Context()
+
 	var transportMetrics []httpmodels.Metric
 	err := json.NewDecoder(r.Body).Decode(&transportMetrics)
 	if err != nil {
@@ -23,38 +24,25 @@ func (rt *Router) updateMetricsBatchJSONHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	updatedMetrics := make([]httpmodels.Metric, 0, len(transportMetrics))
-	for _, transportMetric := range transportMetrics {
-		metricFactory, err := resolveMetricFactoryForMetricType(transportMetric.MType)
-		if err != nil {
-			mustWriteJSONError(w, err, http.StatusBadRequest)
-			return
-		}
-
-		metric, err := buildMetricDomainModel(transportMetric, metricFactory)
-		if err != nil {
-			mustWriteJSONError(w, err, http.StatusBadRequest)
-			return
-		}
-
-		metricUpsertStrategy := metricFactory.ProvideUpsertStrategy()
-
-		newMetricState, err := rt.useCasesController.UpsertScalarMetric(ctx, metric, metricUpsertStrategy)
-		if err != nil {
-			mustWriteJSONError(w, err, http.StatusInternalServerError)
-			return
-		}
-
-		transportMetricAfterUpsert, err := buildMetricTransportModel(newMetricState)
-		if err != nil {
-			mustWriteJSONError(w, err, http.StatusInternalServerError)
-			return
-		}
-
-		updatedMetrics = append(updatedMetrics, transportMetricAfterUpsert)
+	metricsUpserts, err := slice.MapBatch(transportMetrics, buildMetricDomainModel)
+	if err != nil {
+		mustWriteJSONError(w, err, http.StatusBadRequest)
+		return
 	}
 
-	err = json.NewEncoder(w).Encode(updatedMetrics)
+	upsertedMetrics, err := rt.useCasesController.UpsertMetricsBatch(ctx, metricsUpserts)
+	if err != nil {
+		mustWriteJSONError(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	transportUpsertedMetrics, err := slice.MapBatch(upsertedMetrics, buildMetricTransportModel)
+	if err != nil {
+		mustWriteJSONError(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(transportUpsertedMetrics)
 	if err != nil {
 		mustWriteJSONError(w, err, http.StatusInternalServerError)
 		return

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	metricsfabrics "github.com/aridae/go-metrics-store/internal/server/metrics-fabrics"
-	metricsupsertstrategies "github.com/aridae/go-metrics-store/internal/server/metrics-upsert-strategies"
 	"github.com/aridae/go-metrics-store/internal/server/models"
 	"github.com/go-chi/chi/v5"
 )
@@ -35,9 +33,10 @@ type pingable interface {
 }
 
 type useCasesController interface {
-	UpsertScalarMetric(ctx context.Context, metricToRegister models.ScalarMetricToRegister, strategy metricsupsertstrategies.Strategy) (models.ScalarMetric, error)
-	GetScalarMetricLatestState(ctx context.Context, metricKey models.MetricKey) (*models.ScalarMetric, error)
-	GetAllScalarMetricsLatestStates(ctx context.Context) ([]models.ScalarMetric, error)
+	UpsertMetricsBatch(context.Context, []models.MetricUpsert) ([]models.Metric, error)
+	UpsertMetric(context.Context, models.MetricUpsert) (models.Metric, error)
+	GetMetricByKey(context.Context, models.MetricKey) (*models.Metric, error)
+	GetAllMetrics(context.Context) ([]models.Metric, error)
 }
 
 type Router struct {
@@ -84,17 +83,6 @@ func NewRouter(useCasesController useCasesController, options ...RouterOption) *
 
 func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rt.httpMux.ServeHTTP(w, r)
-}
-
-func resolveMetricFactoryForMetricType(metricType string) (metricsfabrics.ScalarMetricFactory, error) {
-	switch metricType {
-	case counter:
-		return metricsfabrics.ObtainCounterMetricFactory(), nil
-	case gauge:
-		return metricsfabrics.ObtainGaugeMetricFactory(), nil
-	default:
-		return nil, fmt.Errorf("unknown metric type: %s", metricType)
-	}
 }
 
 type routerOpts struct {

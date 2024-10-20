@@ -1,9 +1,9 @@
-package postgres
+package metricpgrepo
 
 import (
 	"context"
 	"fmt"
-	scalarmetric "github.com/aridae/go-metrics-store/internal/server/repos/scalar-metric"
+	"github.com/aridae/go-metrics-store/internal/server/repos/metric-repo"
 	"github.com/aridae/go-metrics-store/pkg/postgres"
 )
 
@@ -11,7 +11,7 @@ type repo struct {
 	db *postgres.Client
 }
 
-func NewRepositoryImplementation(ctx context.Context, pgClient *postgres.Client) (scalarmetric.Repository, error) {
+func NewRepositoryImplementation(ctx context.Context, pgClient *postgres.Client) (metricrepo.Repository, error) {
 	imp := &repo{db: pgClient}
 
 	err := imp.prepareSchema(ctx)

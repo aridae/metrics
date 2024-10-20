@@ -10,13 +10,11 @@ import (
 
 // Client replaceable pgx wrapper
 type Client struct {
-	healthcheckTimeout time.Duration
 	*pgxpool.Pool
 }
 
 var defaultOpts = opts{
 	initialReconnectBackoff: 1 * time.Second,
-	healthcheckTimeout:      5 * time.Second,
 }
 
 func NewClient(ctx context.Context, dsn string, opts ...Option) (*Client, error) {
@@ -33,7 +31,6 @@ func NewClient(ctx context.Context, dsn string, opts ...Option) (*Client, error)
 	}
 
 	return &Client{
-		healthcheckTimeout: options.healthcheckTimeout,
-		Pool:               pool,
+		Pool: pool,
 	}, nil
 }

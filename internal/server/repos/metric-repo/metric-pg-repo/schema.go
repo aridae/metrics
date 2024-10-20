@@ -1,4 +1,4 @@
-package postgres
+package metricpgrepo
 
 import "github.com/Masterminds/squirrel"
 

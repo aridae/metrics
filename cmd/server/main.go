@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/aridae/go-metrics-store/internal/server/transport/http/mw"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,16 +11,20 @@ import (
 	"github.com/aridae/go-metrics-store/internal/server/config"
 	"github.com/aridae/go-metrics-store/internal/server/logger"
 	"github.com/aridae/go-metrics-store/internal/server/models"
-	"github.com/aridae/go-metrics-store/internal/server/mw"
-	scalarmetric "github.com/aridae/go-metrics-store/internal/server/repos/scalar-metric"
-	scalarmetricinmem "github.com/aridae/go-metrics-store/internal/server/repos/scalar-metric/inmemory"
-	sclarmetricpg "github.com/aridae/go-metrics-store/internal/server/repos/scalar-metric/postgres"
+	"github.com/aridae/go-metrics-store/internal/server/repos/metric-repo"
+	"github.com/aridae/go-metrics-store/internal/server/repos/metric-repo/metric-inmem-repo"
+	"github.com/aridae/go-metrics-store/internal/server/repos/metric-repo/metric-pg-repo"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers"
 	"github.com/aridae/go-metrics-store/internal/server/usecases"
+	"github.com/aridae/go-metrics-store/pkg/inmem"
 	"github.com/aridae/go-metrics-store/pkg/postgres"
-	tsstorage "github.com/aridae/go-metrics-store/pkg/timeseries-storage"
 )
+
+/*
+TODO добавить транзакционную модель по тутору https://threedots.tech/post/database-transactions-in-go/
+TODO почитать вот эту статью https://threedots.tech/post/repository-pattern-in-go/
+*/
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -38,14 +43,14 @@ func main() {
 
 	cnf := config.Obtain()
 
-	var repo scalarmetric.Repository
+	var repo metricrepo.Repository
 	var routerOptions []handlers.RouterOption
 
 	if cnf.DatabaseDsn != "" {
 		pgClient := mustInitPostgresClient(ctx, cnf)
 
 		var err error
-		repo, err = sclarmetricpg.NewRepositoryImplementation(ctx, pgClient)
+		repo, err = metricpgrepo.NewRepositoryImplementation(ctx, pgClient)
 		if err != nil {
 			logger.Obtain().Fatalf("failed to init repo: %v", err)
 		}
@@ -55,7 +60,7 @@ func main() {
 
 	if repo == nil {
 		memStore := mustInitMemStore(ctx, cnf)
-		repo = scalarmetricinmem.NewRepositoryImplementation(memStore)
+		repo = metricinmemrepo.NewRepositoryImplementation(memStore)
 	}
 
 	useCaseController := usecases.NewController(repo)
@@ -73,18 +78,11 @@ func main() {
 	}
 }
 
-func mustInitMemStore(ctx context.Context, cnf *config.Config) *tsstorage.MemTimeseriesStorage {
-	memStore := tsstorage.New()
+func mustInitMemStore(ctx context.Context, cnf *config.Config) *inmem.MemTimeseriesStorage {
+	memStore := inmem.New()
 
-	// NOTE: tsstorage.MemTimeseriesStorage работает с интерфейсом TimeseriesValue
-	// и не знает о том, какие модельки передаются под капотом. Но из-за этого,
-	// при бэкапе в файл, и последующем чтении из файла MemTimeseriesStorage не может знать,
-	// в какую структуру/структурки десереализовать содержимое файла.
-	// Чтобы не писать свои маршаллеры/анмаршраллеры на рефлексии,
-	// я регистрирую типы для использования в gob.Encoder/Decoder.
-	// Но это делает стор зависимым от гошных моделек, и мне от этого грустно.
 	err := memStore.InitBackup(ctx, cnf.FileStoragePath, cnf.StoreInterval, map[string]any{
-		"ScalarMetric":       models.ScalarMetric{},
+		"Metric":             models.Metric{},
 		"Int64MetricValue":   models.NewInt64MetricValue(0),
 		"Float64MetricValue": models.NewFloat64MetricValue(0),
 	})

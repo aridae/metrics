@@ -30,15 +30,14 @@ func (rt *Router) updateMetricByURLPathHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	metricValue, err := metricFactory.ParseScalarMetricValue(metricValueFromURL)
+	metricValue, err := metricFactory.ParseMetricValue(metricValueFromURL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	metricToRegister := metricFactory.CreateScalarMetricToRegister(metricNameFromURL, metricValue)
-	metricUpsertStrategy := metricFactory.ProvideUpsertStrategy()
+	metricToRegister := metricFactory.CreateMetricUpsert(metricNameFromURL, metricValue)
 
-	_, err = rt.useCasesController.UpsertScalarMetric(ctx, metricToRegister, metricUpsertStrategy)
+	_, err = rt.useCasesController.UpsertMetric(ctx, metricToRegister)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -14,8 +14,8 @@ func (rt *Router) updateMetricJSONHandler(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-
 	ctx := r.Context()
+
 	transportMetric := httpmodels.Metric{}
 	err := json.NewDecoder(r.Body).Decode(&transportMetric)
 	if err != nil {
@@ -23,20 +23,13 @@ func (rt *Router) updateMetricJSONHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	metricFactory, err := resolveMetricFactoryForMetricType(transportMetric.MType)
+	metric, err := buildMetricDomainModel(transportMetric)
 	if err != nil {
 		mustWriteJSONError(w, err, http.StatusBadRequest)
 		return
 	}
 
-	metric, err := buildMetricDomainModel(transportMetric, metricFactory)
-	if err != nil {
-		mustWriteJSONError(w, err, http.StatusBadRequest)
-		return
-	}
-	metricUpsertStrategy := metricFactory.ProvideUpsertStrategy()
-
-	newMetricState, err := rt.useCasesController.UpsertScalarMetric(ctx, metric, metricUpsertStrategy)
+	newMetricState, err := rt.useCasesController.UpsertMetric(ctx, metric)
 	if err != nil {
 		mustWriteJSONError(w, err, http.StatusInternalServerError)
 		return

@@ -8,9 +8,9 @@ import (
 )
 
 type metricsRepo interface {
-	Save(ctx context.Context, metric models.ScalarMetric) error
-	GetLatestState(ctx context.Context, key models.MetricKey) (*models.ScalarMetric, error)
-	GetAllLatestStates(ctx context.Context) ([]models.ScalarMetric, error)
+	Save(ctx context.Context, metric models.Metric) error
+	GetByKey(ctx context.Context, key models.MetricKey) (*models.Metric, error)
+	GetAll(ctx context.Context) ([]models.Metric, error)
 }
 
 type Controller struct {

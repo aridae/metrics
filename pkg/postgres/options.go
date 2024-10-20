@@ -3,18 +3,10 @@ package postgres
 import "time"
 
 type opts struct {
-	healthcheckTimeout      time.Duration
 	initialReconnectBackoff time.Duration
 }
 
 type Option func(opts) opts
-
-func WithHealthcheckTimeout(timeout time.Duration) Option {
-	return func(o opts) opts {
-		o.healthcheckTimeout = timeout
-		return o
-	}
-}
 
 func WithInitialReconnectBackoffOnFail(backoff time.Duration) Option {
 	return func(o opts) opts {

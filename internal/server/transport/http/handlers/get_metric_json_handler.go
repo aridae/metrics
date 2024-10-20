@@ -14,8 +14,8 @@ func (rt *Router) getMetricJSONHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-
 	ctx := r.Context()
+
 	transportMetricRequest := httpmodels.MetricRequest{}
 	err := json.NewDecoder(r.Body).Decode(&transportMetricRequest)
 	if err != nil {
@@ -30,7 +30,7 @@ func (rt *Router) getMetricJSONHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	metricKey := metricFactory.CreateMetricKey(transportMetricRequest.ID)
 
-	metric, err := rt.useCasesController.GetScalarMetricLatestState(ctx, metricKey)
+	metric, err := rt.useCasesController.GetMetricByKey(ctx, metricKey)
 	if err != nil {
 		mustWriteJSONError(w, err, http.StatusInternalServerError)
 		return

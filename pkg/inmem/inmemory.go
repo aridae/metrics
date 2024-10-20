@@ -1,4 +1,4 @@
-package timeseriesstorage
+package inmem
 
 import (
 	"context"

@@ -48,14 +48,6 @@ func main() {
 	pollTick := time.NewTicker(pollInterval)
 	reportTick := time.NewTicker(reportInterval)
 
-	// NOTE: если юзать не retryable, а стандартного http клиента,
-	// то в автотесты на итерации 7-9 падают из-за ошибки клиента
-	// при выполнении запроса - EOF. Локально такое не воспроизводится,
-	// и я не могу вкурить, из-за чего это происходит.
-	// У меня есть предположение, что это происходит из-за того, что
-	// http сервер закрывает соединение без keep-alive после первого запроса,
-	// а http client пытается переиспользовать соединение. Но я не смогла найти в доке пруфы
-	// или другое объяснение. И не понимаю, почему локально не воспроизводится (((
 	httpClient := retryablehttp.NewClient().StandardClient()
 
 	pollCounter := counter(0)
@@ -175,7 +167,7 @@ func buildMetricJSONPayload(
 		if !ok {
 			return httpmodels.Metric{}, fmt.Errorf("value is not int64")
 		}
-		int64Val := int64(counterVal)
+		int64Val := strconv.FormatInt(int64(counterVal), 10)
 		return httpmodels.Metric{
 			ID:    name,
 			MType: mtype,
@@ -186,7 +178,7 @@ func buildMetricJSONPayload(
 		if !ok {
 			return httpmodels.Metric{}, fmt.Errorf("value is not float64")
 		}
-		float64Val := float64(gaugeVal)
+		float64Val := strconv.FormatFloat(float64(gaugeVal), 'f', -1, 64)
 		return httpmodels.Metric{
 			ID:    name,
 			MType: mtype,
