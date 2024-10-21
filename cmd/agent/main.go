@@ -167,7 +167,7 @@ func buildMetricJSONPayload(
 		if !ok {
 			return httpmodels.Metric{}, fmt.Errorf("value is not int64")
 		}
-		int64Val := strconv.FormatInt(int64(counterVal), 10)
+		int64Val := int64(counterVal)
 		return httpmodels.Metric{
 			ID:    name,
 			MType: mtype,
@@ -178,7 +178,7 @@ func buildMetricJSONPayload(
 		if !ok {
 			return httpmodels.Metric{}, fmt.Errorf("value is not float64")
 		}
-		float64Val := strconv.FormatFloat(float64(gaugeVal), 'f', -1, 64)
+		float64Val := float64(gaugeVal)
 		return httpmodels.Metric{
 			ID:    name,
 			MType: mtype,

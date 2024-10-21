@@ -26,3 +26,11 @@ func (mv int64MetricValue) Inc(v MetricValue) (MetricValue, error) {
 
 	return int64MetricValue{Val: newVal}, nil
 }
+
+func (mv int64MetricValue) UnsafeCastFloat() float64 {
+	return float64(mv.Val)
+}
+
+func (mv int64MetricValue) UnsafeCastInt() int64 {
+	return mv.Val
+}
