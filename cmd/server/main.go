@@ -2,6 +2,10 @@ package main
 
 import (
 	"context"
+	"github.com/aridae/go-metrics-store/internal/server/repos"
+	"github.com/aridae/go-metrics-store/internal/server/repos/inmem-driven-repos/metric-inmem-repo"
+	"github.com/aridae/go-metrics-store/internal/server/repos/pg-driven-repos/metric-pg-repo"
+	pgtxman "github.com/aridae/go-metrics-store/internal/server/repos/pg-driven-repos/pg-tx-man"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http/mw"
 	"os"
 	"os/signal"
@@ -11,9 +15,6 @@ import (
 	"github.com/aridae/go-metrics-store/internal/server/config"
 	"github.com/aridae/go-metrics-store/internal/server/logger"
 	"github.com/aridae/go-metrics-store/internal/server/models"
-	"github.com/aridae/go-metrics-store/internal/server/repos/metric-repo"
-	"github.com/aridae/go-metrics-store/internal/server/repos/metric-repo/metric-inmem-repo"
-	"github.com/aridae/go-metrics-store/internal/server/repos/metric-repo/metric-pg-repo"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers"
 	"github.com/aridae/go-metrics-store/internal/server/usecases"
@@ -43,27 +44,30 @@ func main() {
 
 	cnf := config.Obtain()
 
-	var repo metricrepo.Repository
+	var txMan repos.TransactionManager
+	var metricRepo repos.MetricRepository
 	var routerOptions []handlers.RouterOption
 
 	if cnf.DatabaseDsn != "" {
 		pgClient := mustInitPostgresClient(ctx, cnf)
 
 		var err error
-		repo, err = metricpgrepo.NewRepositoryImplementation(ctx, pgClient)
+		metricRepo, err = metricpgrepo.NewRepositoryImplementation(ctx, pgClient)
 		if err != nil {
-			logger.Obtain().Fatalf("failed to init repo: %v", err)
+			logger.Obtain().Fatalf("failed to init metricRepo: %v", err)
 		}
 
+		txMan = pgtxman.NewTransactionManagerImplementation(pgClient)
 		routerOptions = append(routerOptions, handlers.CheckAvailableOnPing(pgClient))
 	}
 
-	if repo == nil {
+	if metricRepo == nil {
 		memStore := mustInitMemStore(ctx, cnf)
-		repo = metricinmemrepo.NewRepositoryImplementation(memStore)
+		metricRepo = metricinmemrepo.NewRepositoryImplementation(memStore)
+		txMan = repos.NewNoopTransactionManager(&repos.Repositories{MetricRepository: metricRepo})
 	}
 
-	useCaseController := usecases.NewController(repo)
+	useCaseController := usecases.NewController(metricRepo, txMan)
 
 	httpRouter := handlers.NewRouter(useCaseController, routerOptions...)
 

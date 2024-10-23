@@ -2,7 +2,7 @@ package metricinmemrepo
 
 import (
 	"context"
-	metricrepo "github.com/aridae/go-metrics-store/internal/server/repos/metric-repo"
+	metricrepo "github.com/aridae/go-metrics-store/internal/server/repos"
 	"github.com/aridae/go-metrics-store/pkg/inmem"
 )
 
@@ -16,6 +16,6 @@ type repo struct {
 	db db
 }
 
-func NewRepositoryImplementation(db db) metricrepo.Repository {
+func NewRepositoryImplementation(db db) metricrepo.MetricRepository {
 	return &repo{db: db}
 }

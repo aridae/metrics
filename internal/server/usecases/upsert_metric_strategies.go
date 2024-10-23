@@ -7,13 +7,13 @@ import (
 	"time"
 )
 
-func (c *Controller) upsert(ctx context.Context, metricUpsert models.MetricUpsert, now time.Time) (models.Metric, error) {
+func upsert(ctx context.Context, metricsRepo metricsRepo, metricUpsert models.MetricUpsert, now time.Time) (models.Metric, error) {
 	upsertFn, ok := upsertStrategyByType[metricUpsert.GetType()]
 	if !ok {
 		return models.Metric{}, fmt.Errorf("unknown metric type: %s", metricUpsert.GetType())
 	}
 
-	newMetricState, err := upsertFn(ctx, c, metricUpsert, now)
+	newMetricState, err := upsertFn(ctx, metricsRepo, metricUpsert, now)
 	if err != nil {
 		return models.Metric{}, fmt.Errorf("failed to upsert metric <key:%s>: %w", metricUpsert.GetKey(), err)
 	}
@@ -21,15 +21,15 @@ func (c *Controller) upsert(ctx context.Context, metricUpsert models.MetricUpser
 	return newMetricState, nil
 }
 
-var upsertStrategyByType = map[models.MetricType]func(ctx context.Context, c *Controller, metricUpsert models.MetricUpsert, now time.Time) (models.Metric, error){
+var upsertStrategyByType = map[models.MetricType]func(ctx context.Context, metricsRepo metricsRepo, metricUpsert models.MetricUpsert, now time.Time) (models.Metric, error){
 	models.MetricTypeGauge:   upsertMetricOverride,
 	models.MetricTypeCounter: upsertMetricIncrement,
 }
 
-func upsertMetricOverride(ctx context.Context, c *Controller, metricUpsert models.MetricUpsert, now time.Time) (models.Metric, error) {
+func upsertMetricOverride(ctx context.Context, metricsRepo metricsRepo, metricUpsert models.MetricUpsert, now time.Time) (models.Metric, error) {
 	newState := metricUpsert.WithDatetime(now)
 
-	err := c.metricsRepo.Save(ctx, newState)
+	err := metricsRepo.Save(ctx, newState)
 	if err != nil {
 		return models.Metric{}, fmt.Errorf("failed to save new metric state <key:%s>: %w", metricUpsert.GetKey(), err)
 	}
@@ -37,8 +37,8 @@ func upsertMetricOverride(ctx context.Context, c *Controller, metricUpsert model
 	return newState, nil
 }
 
-func upsertMetricIncrement(ctx context.Context, c *Controller, metricUpsert models.MetricUpsert, now time.Time) (models.Metric, error) {
-	prevState, err := c.metricsRepo.GetByKey(ctx, metricUpsert.GetKey())
+func upsertMetricIncrement(ctx context.Context, metricsRepo metricsRepo, metricUpsert models.MetricUpsert, now time.Time) (models.Metric, error) {
+	prevState, err := metricsRepo.GetByKey(ctx, metricUpsert.GetKey())
 	if err != nil {
 		return models.Metric{}, fmt.Errorf("failed to get prev metric state <key:%s>: %w", metricUpsert.GetKey(), err)
 	}
@@ -53,7 +53,7 @@ func upsertMetricIncrement(ctx context.Context, c *Controller, metricUpsert mode
 		newState = prevState.WithValue(newVal).WithDatetime(now)
 	}
 
-	err = c.metricsRepo.Save(ctx, newState)
+	err = metricsRepo.Save(ctx, newState)
 	if err != nil {
 		return models.Metric{}, fmt.Errorf("failed to save new metric state <key:%s>: %w", metricUpsert.GetKey(), err)
 	}
