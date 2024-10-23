@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/aridae/go-metrics-store/pkg/slice"
 	"net/http"
 
 	httpmodels "github.com/aridae/go-metrics-store/internal/server/transport/http/models"
 )
 
-func (rt *Router) updateMetricJSONHandler(w http.ResponseWriter, r *http.Request) {
+func (rt *Router) updateMetricsBatchJSONHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 
 	if r.Method != http.MethodPost {
@@ -16,32 +17,32 @@ func (rt *Router) updateMetricJSONHandler(w http.ResponseWriter, r *http.Request
 	}
 	ctx := r.Context()
 
-	transportMetric := httpmodels.Metric{}
-	err := json.NewDecoder(r.Body).Decode(&transportMetric)
+	var transportMetrics []httpmodels.Metric
+	err := json.NewDecoder(r.Body).Decode(&transportMetrics)
 	if err != nil {
 		mustWriteJSONError(w, err, http.StatusBadRequest)
 		return
 	}
 
-	metric, err := buildMetricDomainModel(transportMetric)
+	metricsUpserts, err := slice.MapBatch(transportMetrics, buildMetricDomainModel)
 	if err != nil {
 		mustWriteJSONError(w, err, http.StatusBadRequest)
 		return
 	}
 
-	newMetricState, err := rt.useCasesController.UpsertMetric(ctx, metric)
+	upsertedMetrics, err := rt.useCasesController.UpsertMetricsBatch(ctx, metricsUpserts)
 	if err != nil {
 		mustWriteJSONError(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	transportMetricAfterUpsert, err := buildMetricTransportModel(newMetricState)
+	transportUpsertedMetrics, err := slice.MapBatch(upsertedMetrics, buildMetricTransportModel)
 	if err != nil {
 		mustWriteJSONError(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(transportMetricAfterUpsert)
+	err = json.NewEncoder(w).Encode(transportUpsertedMetrics)
 	if err != nil {
 		mustWriteJSONError(w, err, http.StatusInternalServerError)
 		return

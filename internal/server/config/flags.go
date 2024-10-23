@@ -10,6 +10,7 @@ type flags struct {
 	StoreIntervalOverride   time.Duration
 	FileStoragePathOverride string
 	RestoreOverride         bool
+	DatabaseDsnOverride     string
 }
 
 func parseFlags() flags {
@@ -23,6 +24,8 @@ func parseFlags() flags {
 	flag.StringVar(&flgs.FileStoragePathOverride, "f", fileStoragePathDefault, "Backup file path")
 
 	flag.BoolVar(&flgs.RestoreOverride, "r", restoreDefault, "Restore from backup file on start")
+
+	flag.StringVar(&flgs.DatabaseDsnOverride, "d", "", "Database DSN")
 
 	flag.Parse()
 

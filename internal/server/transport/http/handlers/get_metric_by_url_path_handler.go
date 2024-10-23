@@ -26,7 +26,7 @@ func (rt *Router) getMetricByURLPathHandler(w http.ResponseWriter, r *http.Reque
 	}
 	metricKey := metricFactory.CreateMetricKey(metricNameFromURL)
 
-	latestState, err := rt.useCasesController.GetScalarMetricLatestState(ctx, metricKey)
+	latestState, err := rt.useCasesController.GetMetricByKey(ctx, metricKey)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -36,7 +36,7 @@ func (rt *Router) getMetricByURLPathHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	_, err = w.Write([]byte(latestState.Value().String()))
+	_, err = w.Write([]byte(latestState.GetValue().String()))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

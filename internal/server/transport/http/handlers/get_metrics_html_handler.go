@@ -16,7 +16,7 @@ func (rt *Router) getAllMetricsHTMLHandler(w http.ResponseWriter, r *http.Reques
 	}
 	ctx := r.Context()
 
-	metrics, err := rt.useCasesController.GetAllScalarMetricsLatestStates(ctx)
+	metrics, err := rt.useCasesController.GetAllMetrics(ctx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

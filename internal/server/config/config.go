@@ -10,10 +10,11 @@ import (
 const (
 	yamlConfigPath = "./config/server.yaml"
 
-	addressDefaultVal      = "localhost:8080"
-	storeIntervalDefault   = time.Duration(300) * time.Second
-	fileStoragePathDefault = "./.data"
-	restoreDefault         = true
+	addressDefaultVal          = "localhost:8080"
+	storeIntervalDefault       = time.Duration(300) * time.Second
+	fileStoragePathDefault     = "./.data"
+	restoreDefault             = true
+	databaseMaxOpenConnDefault = 5
 )
 
 var (
@@ -22,10 +23,12 @@ var (
 )
 
 type Config struct {
-	Address         string
-	StoreInterval   time.Duration
-	FileStoragePath string
-	Restore         bool
+	Address             string
+	StoreInterval       time.Duration
+	FileStoragePath     string
+	Restore             bool
+	DatabaseDsn         string
+	DatabaseMaxOpenConn int
 }
 
 func Obtain() *Config {
@@ -65,6 +68,7 @@ func (c *Config) defaults() {
 	c.StoreInterval = storeIntervalDefault
 	c.FileStoragePath = fileStoragePathDefault
 	c.Restore = restoreDefault
+	c.DatabaseMaxOpenConn = databaseMaxOpenConnDefault
 }
 
 func (c *Config) overrideAddressIfNotDefault(address string, source string) {
@@ -105,4 +109,14 @@ func (c *Config) overrideRestoreIfNotDefault(restore bool, source string) {
 
 	logger.Obtain().Infof("overriding Restore from %s: (%t)-->(%t)", source, c.Restore, restore)
 	c.Restore = restore
+}
+
+func (c *Config) overrideDatabaseDNSIfNotDefault(dns string, source string) {
+	if dns == "" {
+		logger.Obtain().Debugf("source %s provided empty dns value, not overriding", source)
+		return
+	}
+
+	logger.Obtain().Infof("overriding dns from %s", source)
+	c.DatabaseDsn = dns
 }

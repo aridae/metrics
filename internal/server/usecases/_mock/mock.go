@@ -41,10 +41,10 @@ func (m *MockmetricsRepo) EXPECT() *MockmetricsRepoMockRecorder {
 }
 
 // GetAllLatestStates mocks base method.
-func (m *MockmetricsRepo) GetAllLatestStates(ctx context.Context) ([]models.ScalarMetric, error) {
+func (m *MockmetricsRepo) GetAll(ctx context.Context) ([]models.Metric, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllLatestStates", ctx)
-	ret0, _ := ret[0].([]models.ScalarMetric)
+	ret := m.ctrl.Call(m, "GetAll", ctx)
+	ret0, _ := ret[0].([]models.Metric)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -52,14 +52,14 @@ func (m *MockmetricsRepo) GetAllLatestStates(ctx context.Context) ([]models.Scal
 // GetAllLatestStates indicates an expected call of GetAllLatestStates.
 func (mr *MockmetricsRepoMockRecorder) GetAllLatestStates(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllLatestStates", reflect.TypeOf((*MockmetricsRepo)(nil).GetAllLatestStates), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockmetricsRepo)(nil).GetAll), ctx)
 }
 
 // GetLatestState mocks base method.
-func (m *MockmetricsRepo) GetLatestState(ctx context.Context, key models.MetricKey) (*models.ScalarMetric, error) {
+func (m *MockmetricsRepo) GetByKey(ctx context.Context, key models.MetricKey) (*models.Metric, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLatestState", ctx, key)
-	ret0, _ := ret[0].(*models.ScalarMetric)
+	ret := m.ctrl.Call(m, "GetByKey", ctx, key)
+	ret0, _ := ret[0].(*models.Metric)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -67,11 +67,11 @@ func (m *MockmetricsRepo) GetLatestState(ctx context.Context, key models.MetricK
 // GetLatestState indicates an expected call of GetLatestState.
 func (mr *MockmetricsRepoMockRecorder) GetLatestState(ctx, key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLatestState", reflect.TypeOf((*MockmetricsRepo)(nil).GetLatestState), ctx, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByKey", reflect.TypeOf((*MockmetricsRepo)(nil).GetByKey), ctx, key)
 }
 
 // Save mocks base method.
-func (m *MockmetricsRepo) Save(ctx context.Context, metric models.ScalarMetric) error {
+func (m *MockmetricsRepo) Save(ctx context.Context, metric models.Metric) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Save", ctx, metric)
 	ret0, _ := ret[0].(error)
