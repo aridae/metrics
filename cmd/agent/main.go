@@ -29,7 +29,7 @@ func main() {
 	cnf := config.Init()
 
 	metricsServiceClient := metricsservice.NewClient(cnf.Address)
-	metricsAgent := metricsreporting.NewAgent(metricsServiceClient)
+	metricsAgent := metricsreporting.NewAgent(metricsServiceClient, cnf.PollInterval, cnf.ReportInterval)
 
 	metricsAgent.Run(ctx)
 }

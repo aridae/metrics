@@ -24,11 +24,17 @@ type Agent struct {
 	reportInterval time.Duration
 }
 
-func NewAgent(metricsService metricsService) *Agent {
+func NewAgent(
+	metricsService metricsService,
+	pollInterval time.Duration,
+	reportInterval time.Duration,
+) *Agent {
 	return &Agent{
 		gauges:         make(map[string]gauge),
 		counters:       make(map[string]counter),
 		metricsService: metricsService,
+		pollInterval:   pollInterval,
+		reportInterval: reportInterval,
 	}
 }
 
