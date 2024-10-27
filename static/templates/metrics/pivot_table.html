@@ -8,7 +8,7 @@
     <thead><tr><th>type/name</th><th>value</th></tr></thead>
     <tbody>
     {{range $metric := .}}
-    <tr><td>{{$metric.Type}}/{{$metric.Name}}</td><td>{{$metric.Value}}</td></tr>
+    <tr><td>{{$metric.Mtype}}/{{$metric.MName}}</td><td>{{$metric.Val}}</td></tr>
     {{end}}
     </tbody>
 </table>
