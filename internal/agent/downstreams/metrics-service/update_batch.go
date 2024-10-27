@@ -15,7 +15,7 @@ func (c *Client) UpdateMetricsBatch(_ context.Context, metrics []Metric) error {
 		return fmt.Errorf("failed to encode json-serializable struct: %w", err)
 	}
 
-	serverURL, _ := url.JoinPath("http://"+c.address, "/update")
+	serverURL, _ := url.JoinPath("http://"+c.address, "/updates/")
 
 	if err := doRequest(c.client, http.MethodPost, serverURL, body, "application/json"); err != nil {
 		return fmt.Errorf("failed to do http call: %w", err)
