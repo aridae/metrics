@@ -2,7 +2,7 @@ package repos
 
 import (
 	"context"
-	"github.com/aridae/go-metrics-store/internal/server/logger"
+	"github.com/aridae/go-metrics-store/pkg/logger"
 )
 
 type Repositories struct {

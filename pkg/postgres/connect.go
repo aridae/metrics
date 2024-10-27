@@ -3,9 +3,9 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"github.com/aridae/go-metrics-store/pkg/logger"
 	"time"
 
-	"github.com/aridae/go-metrics-store/internal/server/logger"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/aridae/go-metrics-store/internal/server/logger"
 	"github.com/aridae/go-metrics-store/internal/server/repos"
 	"github.com/aridae/go-metrics-store/internal/server/repos/pg-driven-repos/metric-pg-repo"
+	"github.com/aridae/go-metrics-store/pkg/logger"
 	"github.com/jackc/pgx/v5"
 )
 
