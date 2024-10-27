@@ -4,11 +4,10 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
+	"github.com/aridae/go-metrics-store/pkg/logger"
 	"io"
 	"os"
 	"time"
-
-	"github.com/aridae/go-metrics-store/internal/server/logger"
 )
 
 func (mem *MemTimeseriesStorage) InitBackup(
@@ -48,7 +47,7 @@ func (mem *MemTimeseriesStorage) runBackupLoop(ctx context.Context) {
 				logger.Obtain().Errorf("[timeseriesstorage.MemTimeseriesStorage.runBackupLoop][CRITICAL] failed to dump data to backup file: %v", err)
 			}
 		case <-ctx.Done():
-			logger.Obtain().Info("stopping backup service routine...")
+			logger.Obtain().Info("stopping backup service downstreams...")
 			return
 		}
 	}

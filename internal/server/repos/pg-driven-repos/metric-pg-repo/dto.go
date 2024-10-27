@@ -35,7 +35,7 @@ func parseDTO(d metricDTO) (models.Metric, error) {
 
 	parser, ok := metricsValueParsers[mtype]
 	if !ok {
-		return models.Metric{}, fmt.Errorf("unsupported metrics type %q", mtype)
+		return models.Metric{}, fmt.Errorf("unsupported metrics-reporting type %q", mtype)
 	}
 
 	mvalue, err := parser(d.Value)
