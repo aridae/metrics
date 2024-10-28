@@ -28,6 +28,7 @@ type Config struct {
 	Restore             bool
 	DatabaseDsn         string
 	DatabaseMaxOpenConn int
+	Key                 string
 }
 
 func Obtain() *Config {
@@ -118,4 +119,14 @@ func (c *Config) overrideDatabaseDNSIfNotDefault(dns string, source string) {
 
 	logger.Obtain().Infof("overriding dns from %s", source)
 	c.DatabaseDsn = dns
+}
+
+func (c *Config) overrideKeyIfNotDefault(key string, source string) {
+	if key == "" {
+		logger.Obtain().Debugf("source %s provided empty key value, not overriding", source)
+		return
+	}
+
+	logger.Obtain().Infof("overriding key from %s", source)
+	c.Key = key
 }

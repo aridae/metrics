@@ -12,6 +12,10 @@ func parseEnv(cnf *Config) {
 		cnf.Address = envAddress
 	}
 
+	if envKey := os.Getenv("KEY"); envKey != "" {
+		cnf.Key = envKey
+	}
+
 	if envReportInterval := os.Getenv("REPORT_INTERVAL"); envReportInterval != "" {
 		reportIntervalSec, err := strconv.ParseInt(envReportInterval, 10, 64)
 		if err != nil {
@@ -27,4 +31,5 @@ func parseEnv(cnf *Config) {
 		}
 		cnf.PollInterval = time.Duration(pollIntervalSec) * time.Second
 	}
+
 }

@@ -11,6 +11,7 @@ type flags struct {
 	FileStoragePathOverride string
 	RestoreOverride         bool
 	DatabaseDsnOverride     string
+	Key                     string
 }
 
 func parseFlags() flags {
@@ -26,6 +27,8 @@ func parseFlags() flags {
 	flag.BoolVar(&flgs.RestoreOverride, "r", restoreDefault, "Restore from backup file on start")
 
 	flag.StringVar(&flgs.DatabaseDsnOverride, "d", "", "Database DSN")
+
+	flag.StringVar(&flgs.Key, "k", "", "ключ для подписания запросов SHA256 подписью")
 
 	flag.Parse()
 

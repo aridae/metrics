@@ -6,6 +6,7 @@ import (
 	metricsservice "github.com/aridae/go-metrics-store/internal/agent/downstreams/metrics-service"
 	metricsreporting "github.com/aridae/go-metrics-store/internal/agent/metrics-reporting"
 	"github.com/aridae/go-metrics-store/pkg/logger"
+	sha256mw "github.com/aridae/go-metrics-store/pkg/sha256-mw"
 	"os"
 	"os/signal"
 	"syscall"
@@ -28,7 +29,9 @@ func main() {
 
 	cnf := config.Init()
 
-	metricsServiceClient := metricsservice.NewClient(cnf.Address)
+	metricsServiceClient := metricsservice.NewClient(cnf.Address,
+		sha256mw.SignRequestClientMiddleware(cnf.Key),
+	)
 	metricsAgent := metricsreporting.NewAgent(metricsServiceClient, cnf.PollInterval, cnf.ReportInterval)
 
 	metricsAgent.Run(ctx)

@@ -14,5 +14,7 @@ func parseFlags(cnf *Config) {
 
 	flag.StringVar(&cnf.Address, "a", defaultConfig.Address, "адрес эндпоинта HTTP-сервера (по умолчанию localhost:8080")
 
+	flag.StringVar(&cnf.Key, "k", defaultConfig.Key, "ключ для подписания запросов SHA256 подписью")
+
 	flag.Parse()
 }
