@@ -11,13 +11,10 @@ const (
 	gaugeType   = "gauge"
 )
 
-func (a *Agent) reportMetricWithJSONPayload(ctx context.Context) error {
-	a.mu.RLock()
-	defer a.mu.RUnlock()
+func reportMetricWithJSONPayload(ctx context.Context, metricsService metricsService, pack metricsPack) error {
+	metricsBatch := make([]metricsservice.Metric, 0, len(pack.gauges)+len(pack.counters))
 
-	metricsBatch := make([]metricsservice.Metric, 0, len(a.gauges)+len(a.counters))
-
-	for gaugeName, gaugeVal := range a.gauges {
+	for gaugeName, gaugeVal := range pack.gauges {
 		jsonGauge, err := buildMetricJSONPayload(gaugeType, gaugeName, gaugeVal)
 		if err != nil {
 			return fmt.Errorf("failed to build gauge <name:%s> json-serializable struct: %w", gaugeName, err)
@@ -26,7 +23,7 @@ func (a *Agent) reportMetricWithJSONPayload(ctx context.Context) error {
 		metricsBatch = append(metricsBatch, jsonGauge)
 	}
 
-	for counterName, counterVal := range a.counters {
+	for counterName, counterVal := range pack.counters {
 		jsonCounter, err := buildMetricJSONPayload(counterType, counterName, counterVal)
 		if err != nil {
 			return fmt.Errorf("failed to build counter <name:%s> json-serializable struct: %w", counterName, err)
@@ -35,7 +32,7 @@ func (a *Agent) reportMetricWithJSONPayload(ctx context.Context) error {
 		metricsBatch = append(metricsBatch, jsonCounter)
 	}
 
-	if err := a.metricsService.UpdateMetricsBatch(ctx, metricsBatch); err != nil {
+	if err := metricsService.UpdateMetricsBatch(ctx, metricsBatch); err != nil {
 		return fmt.Errorf("failed to update metrics batch: %w", err)
 	}
 

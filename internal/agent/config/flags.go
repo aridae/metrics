@@ -16,5 +16,7 @@ func parseFlags(cnf *Config) {
 
 	flag.StringVar(&cnf.Key, "k", defaultConfig.Key, "ключ для подписания запросов SHA256 подписью")
 
+	flag.Int64Var(&cnf.ReportersPoolSize, "l", defaultConfig.ReportersPoolSize, "количество одновременно исходящих запросов на сервер")
+
 	flag.Parse()
 }

@@ -32,7 +32,7 @@ func main() {
 	metricsServiceClient := metricsservice.NewClient(cnf.Address,
 		sha256mw.SignRequestClientMiddleware(cnf.Key),
 	)
-	metricsAgent := metricsreporting.NewAgent(metricsServiceClient, cnf.PollInterval, cnf.ReportInterval)
+	metricsAgent := metricsreporting.NewAgent(metricsServiceClient, cnf.PollInterval, cnf.ReportInterval, cnf.ReportersPoolSize)
 
 	metricsAgent.Run(ctx)
 }

@@ -32,4 +32,11 @@ func parseEnv(cnf *Config) {
 		cnf.PollInterval = time.Duration(pollIntervalSec) * time.Second
 	}
 
+	if envReportersPoolSize := os.Getenv("RATE_LIMIT"); envReportersPoolSize != "" {
+		reportersPoolSize, err := strconv.ParseInt(envReportersPoolSize, 10, 64)
+		if err != nil {
+			log.Fatalf("invalid RATE_LIMIT environment variable, int64 value expected: %v", err)
+		}
+		cnf.ReportersPoolSize = reportersPoolSize
+	}
 }
