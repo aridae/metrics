@@ -18,11 +18,11 @@ func NewClient(address string, mws ...func(http.RoundTripper) http.RoundTripper)
 		rt = mw(rt)
 	}
 
-	retryableHttpClient := retryablehttp.NewClient()
-	retryableHttpClient.HTTPClient.Transport = rt
+	retryableHTTPClient := retryablehttp.NewClient()
+	retryableHTTPClient.HTTPClient.Transport = rt
 
 	return &Client{
-		client:  retryableHttpClient.StandardClient(),
+		client:  retryableHTTPClient.StandardClient(),
 		address: address,
 	}
 }

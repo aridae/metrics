@@ -73,11 +73,11 @@ func main() {
 	httpRouter := handlers.NewRouter(useCaseController, routerOptions...)
 
 	httpServer := http.NewServer(cnf.Address, httpRouter,
-		sha256mw.SignResponseServerMiddleware(cnf.Key),
-		sha256mw.ValidateRequestServerMiddleware(cnf.Key),
-		mw.LoggingMiddleware,
 		mw.GzipDecompressRequestMiddleware,
+		sha256mw.ValidateRequestServerMiddleware(cnf.Key),
+		sha256mw.SignResponseServerMiddleware(cnf.Key),
 		mw.GzipCompressResponseMiddleware,
+		mw.LoggingMiddleware,
 	)
 
 	if err := httpServer.Run(ctx); err != nil {
