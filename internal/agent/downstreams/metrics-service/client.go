@@ -12,9 +12,17 @@ type Client struct {
 	address string
 }
 
-func NewClient(address string) *Client {
+func NewClient(address string, mws ...func(http.RoundTripper) http.RoundTripper) *Client {
+	rt := http.DefaultTransport
+	for _, mw := range mws {
+		rt = mw(rt)
+	}
+
+	retryableHTTPClient := retryablehttp.NewClient()
+	retryableHTTPClient.HTTPClient.Transport = rt
+
 	return &Client{
-		client:  retryablehttp.NewClient().StandardClient(),
+		client:  retryableHTTPClient.StandardClient(),
 		address: address,
 	}
 }

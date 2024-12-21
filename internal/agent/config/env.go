@@ -12,6 +12,10 @@ func parseEnv(cnf *Config) {
 		cnf.Address = envAddress
 	}
 
+	if envKey := os.Getenv("KEY"); envKey != "" {
+		cnf.Key = envKey
+	}
+
 	if envReportInterval := os.Getenv("REPORT_INTERVAL"); envReportInterval != "" {
 		reportIntervalSec, err := strconv.ParseInt(envReportInterval, 10, 64)
 		if err != nil {
@@ -26,5 +30,13 @@ func parseEnv(cnf *Config) {
 			log.Fatalf("invalid POLL_INTERVAL environment variable, int64 value expected: %v", err)
 		}
 		cnf.PollInterval = time.Duration(pollIntervalSec) * time.Second
+	}
+
+	if envReportersPoolSize := os.Getenv("RATE_LIMIT"); envReportersPoolSize != "" {
+		reportersPoolSize, err := strconv.ParseInt(envReportersPoolSize, 10, 64)
+		if err != nil {
+			log.Fatalf("invalid RATE_LIMIT environment variable, int64 value expected: %v", err)
+		}
+		cnf.ReportersPoolSize = reportersPoolSize
 	}
 }

@@ -8,6 +8,7 @@ import (
 	pgtxman "github.com/aridae/go-metrics-store/internal/server/repos/pg-driven-repos/pg-tx-man"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http/mw"
 	"github.com/aridae/go-metrics-store/pkg/logger"
+	sha256mw "github.com/aridae/go-metrics-store/pkg/sha256-mw"
 	"os"
 	"os/signal"
 	"syscall"
@@ -72,9 +73,11 @@ func main() {
 	httpRouter := handlers.NewRouter(useCaseController, routerOptions...)
 
 	httpServer := http.NewServer(cnf.Address, httpRouter,
-		mw.LoggingMiddleware,
 		mw.GzipDecompressRequestMiddleware,
+		sha256mw.ValidateRequestServerMiddleware(cnf.Key),
+		sha256mw.SignResponseServerMiddleware(cnf.Key),
 		mw.GzipCompressResponseMiddleware,
+		mw.LoggingMiddleware,
 	)
 
 	if err := httpServer.Run(ctx); err != nil {

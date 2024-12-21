@@ -13,6 +13,7 @@ type environs struct {
 	FileStoragePathOverride      *string `env:"FILE_STORAGE_PATH"`
 	RestoreOverride              *bool   `env:"RESTORE"`
 	DatabaseDsnOverride          *string `env:"DATABASE_DSN"`
+	KeyOverride                  *string `env:"KEY"`
 }
 
 func readEnv() (environs, error) {
@@ -46,5 +47,9 @@ func (e environs) override(cfg *Config) {
 
 	if e.DatabaseDsnOverride != nil {
 		cfg.overrideDatabaseDNSIfNotDefault(*e.DatabaseDsnOverride, "env")
+	}
+
+	if e.KeyOverride != nil {
+		cfg.overrideKeyIfNotDefault(*e.KeyOverride, "env")
 	}
 }
