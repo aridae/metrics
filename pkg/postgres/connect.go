@@ -22,7 +22,7 @@ func connectWithBackoff(
 	for {
 		pool, err := connect(ctx, cnf)
 		if err == nil {
-			logger.Obtain().Debugf("successfully connected to postgres, happily exiting connectWithBackoff loop")
+			logger.Debugf("successfully connected to postgres, happily exiting connectWithBackoff loop")
 			return pool, nil
 		}
 
@@ -31,7 +31,7 @@ func connectWithBackoff(
 		}
 		triesLeft--
 
-		logger.Obtain().Errorf("error connecting to postgres: %v, will try again after %s", err, tryConnectInterval)
+		logger.Errorf("error connecting to postgres: %v, will try again after %s", err, tryConnectInterval)
 
 		select {
 		case <-ctx.Done():

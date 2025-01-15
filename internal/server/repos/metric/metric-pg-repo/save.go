@@ -8,6 +8,8 @@ import (
 )
 
 func (r *repo) Save(ctx context.Context, metric models.Metric) error {
+	queryable := r.txGetter.DefaultTrOrDB(ctx, r.db)
+
 	onConflict := fmt.Sprintf("ON CONFLICT(%s) DO UPDATE SET %s = EXCLUDED.%s, %s = EXCLUDED.%s;",
 		keyColumn, valueColumn, valueColumn, datetimeColumn, datetimeColumn)
 
@@ -33,7 +35,7 @@ func (r *repo) Save(ctx context.Context, metric models.Metric) error {
 		return fmt.Errorf("failed to build query: %w", err)
 	}
 
-	_, err = r.db.Exec(ctx, sql, args...)
+	_, err = queryable.Exec(ctx, sql, args...)
 	if err != nil {
 		return fmt.Errorf("failed to run Exec: %w", err)
 	}

@@ -2,7 +2,7 @@ package metricpgrepo
 
 import (
 	"fmt"
-	"github.com/aridae/go-metrics-store/internal/server/models/metrics-fabrics"
+	"github.com/aridae/go-metrics-store/internal/server/models/factories"
 	"time"
 
 	"github.com/aridae/go-metrics-store/internal/server/models"
@@ -54,6 +54,6 @@ func parseDTO(d metricDTO) (models.Metric, error) {
 }
 
 var metricsValueParsers = map[models.MetricType]func(str string) (models.MetricValue, error){
-	models.MetricTypeCounter: metricsfabrics.ObtainCounterMetricFactory().ParseMetricValue,
-	models.MetricTypeGauge:   metricsfabrics.ObtainGaugeMetricFactory().ParseMetricValue,
+	models.MetricTypeCounter: factories.ObtainCounterMetricFactory().ParseMetricValue,
+	models.MetricTypeGauge:   factories.ObtainGaugeMetricFactory().ParseMetricValue,
 }

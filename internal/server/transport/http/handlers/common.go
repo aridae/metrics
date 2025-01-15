@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	metricsfabrics "github.com/aridae/go-metrics-store/internal/server/models/metrics-fabrics"
+	metricsfabrics "github.com/aridae/go-metrics-store/internal/server/models/factories"
 )
 
 func resolveMetricFactoryForMetricType(metricType string) (metricsfabrics.MetricFactory, error) {

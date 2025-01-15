@@ -1,4 +1,4 @@
-package mw
+package loggingmw
 
 import (
 	"github.com/aridae/go-metrics-store/pkg/logger"
@@ -15,7 +15,7 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 
 		duration := time.Since(start)
 
-		logger.Obtain().Infof("[mw.LoggingMiddleware] call %s %s took %s, handled with status code %d, resp body size %d bytes",
+		logger.Infof("[mw.LoggingMiddleware] call %s %s took %s, handled with status code %d, resp body size %d bytes",
 			r.Method, r.RequestURI, duration, respTracker.status, respTracker.sizeBytes,
 		)
 	})

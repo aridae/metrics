@@ -2,14 +2,13 @@ package usecases
 
 import (
 	"context"
-	"github.com/aridae/go-metrics-store/internal/server/repos"
 	"time"
 
 	"github.com/aridae/go-metrics-store/internal/server/models"
 )
 
 type transactionManager interface {
-	DoInTransaction(context.Context, func(*repos.Repositories) error) error
+	Do(ctx context.Context, fn func(ctx context.Context) error) (err error)
 }
 
 type metricsRepo interface {

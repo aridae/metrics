@@ -31,7 +31,7 @@ func (s *Server) Run(ctx context.Context) error {
 
 		err := s.server.Shutdown(ctx)
 		if err != nil {
-			logger.Obtain().Errorf("error shutting down http server: %v", err)
+			logger.Errorf("error shutting down http server: %v", err)
 		}
 	}()
 

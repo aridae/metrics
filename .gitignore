@@ -27,3 +27,5 @@ vendor/
 /static/data/
 .data
 /internal/server/repos/scalar-metric/postgres-driven/
+
+postgres-compose.yaml

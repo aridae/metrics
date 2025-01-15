@@ -46,7 +46,7 @@ func (c *Config) init() {
 	// инициализация структуры конфига из yaml файла
 	yamlsValues, err := parseYaml(yamlConfigPath)
 	if err != nil {
-		logger.Obtain().Errorf("error parsing yaml config, proceeding without yaml overrides: %v", err)
+		logger.Errorf("error parsing yaml config, proceeding without yaml overrides: %v", err)
 	} else {
 		yamlsValues.override(c)
 	}
@@ -57,7 +57,7 @@ func (c *Config) init() {
 	// env, если есть, затирает флаги
 	envValues, err := readEnv()
 	if err != nil {
-		logger.Obtain().Errorf("error parsing environment, proceeding without env overrides: %v", err)
+		logger.Errorf("error parsing environment, proceeding without env overrides: %v", err)
 	} else {
 		envValues.override(c)
 	}
@@ -73,60 +73,60 @@ func (c *Config) defaults() {
 
 func (c *Config) overrideAddressIfNotDefault(address string, source string) {
 	if address == addressDefaultVal {
-		logger.Obtain().Debugf("source %s provided default Address value, not overriding", source)
+		logger.Debugf("source %s provided default Address value, not overriding", source)
 		return
 	}
 
-	logger.Obtain().Infof("overriding Address from %s: (%s)-->(%s)", source, c.Address, address)
+	logger.Infof("overriding Address from %s: (%s)-->(%s)", source, c.Address, address)
 	c.Address = address
 }
 
 func (c *Config) overrideStoreIntervalIfNotDefault(storeInterval time.Duration, source string) {
 	if storeInterval == storeIntervalDefault {
-		logger.Obtain().Debugf("source %s provided default StoreInterval value, not overriding", source)
+		logger.Debugf("source %s provided default StoreInterval value, not overriding", source)
 		return
 	}
 
-	logger.Obtain().Infof("overriding StoreInterval from %s: (%s)-->(%s)", source, c.StoreInterval, storeInterval)
+	logger.Infof("overriding StoreInterval from %s: (%s)-->(%s)", source, c.StoreInterval, storeInterval)
 	c.StoreInterval = storeInterval
 }
 
 func (c *Config) overrideFileStoragePathIfNotDefault(fileStoragePath string, source string) {
 	if fileStoragePath == fileStoragePathDefault {
-		logger.Obtain().Debugf("source %s provided default FileStoragePath value, not overriding", source)
+		logger.Debugf("source %s provided default FileStoragePath value, not overriding", source)
 		return
 	}
 
-	logger.Obtain().Infof("overriding FileStoragePath from %s: (%s)-->(%s)", source, c.FileStoragePath, fileStoragePath)
+	logger.Infof("overriding FileStoragePath from %s: (%s)-->(%s)", source, c.FileStoragePath, fileStoragePath)
 	c.FileStoragePath = fileStoragePath
 }
 
 func (c *Config) overrideRestoreIfNotDefault(restore bool, source string) {
 	if restore {
-		logger.Obtain().Debugf("source %s provided default Restore value, not overriding", source)
+		logger.Debugf("source %s provided default Restore value, not overriding", source)
 		return
 	}
 
-	logger.Obtain().Infof("overriding Restore from %s: (%t)-->(%t)", source, c.Restore, restore)
+	logger.Infof("overriding Restore from %s: (%t)-->(%t)", source, c.Restore, restore)
 	c.Restore = restore
 }
 
 func (c *Config) overrideDatabaseDNSIfNotDefault(dns string, source string) {
 	if dns == "" {
-		logger.Obtain().Debugf("source %s provided empty dns value, not overriding", source)
+		logger.Debugf("source %s provided empty dns value, not overriding", source)
 		return
 	}
 
-	logger.Obtain().Infof("overriding dns from %s", source)
+	logger.Infof("overriding dns from %s", source)
 	c.DatabaseDsn = dns
 }
 
 func (c *Config) overrideKeyIfNotDefault(key string, source string) {
 	if key == "" {
-		logger.Obtain().Debugf("source %s provided empty key value, not overriding", source)
+		logger.Debugf("source %s provided empty key value, not overriding", source)
 		return
 	}
 
-	logger.Obtain().Infof("overriding key from %s", source)
+	logger.Infof("overriding key from %s", source)
 	c.Key = key
 }

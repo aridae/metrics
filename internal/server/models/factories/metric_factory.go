@@ -1,4 +1,4 @@
-package metricsfabrics
+package factories
 
 import (
 	"github.com/aridae/go-metrics-store/internal/server/models"

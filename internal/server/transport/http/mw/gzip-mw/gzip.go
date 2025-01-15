@@ -1,4 +1,4 @@
-package mw
+package gzipmw
 
 import (
 	"compress/gzip"
@@ -18,7 +18,7 @@ func GzipDecompressRequestMiddleware(next http.Handler) http.Handler {
 		uncompressedBody := r.Body
 		gzipReader, err := gzip.NewReader(uncompressedBody)
 		if err != nil {
-			logger.Obtain().Errorf("[mw.GzipDecompressRequestMiddleware] failed to create gzip.Reader: %v", err)
+			logger.Errorf("[mw.GzipDecompressRequestMiddleware] failed to create gzip.Reader: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
