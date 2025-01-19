@@ -62,8 +62,8 @@ func main() {
 	}
 
 	if metricRepo == nil {
-		memStore := mustInitMemStore(ctx, cnf)
-		metricRepo = metricinmemrepo.NewRepositoryImplementation(memStore)
+		inmemStore := mustInitMetricsInmemStore(ctx, cnf)
+		metricRepo = metricinmemrepo.NewRepositoryImplementation(inmemStore)
 		txManager = nooptrm.NewNoopTransactionManager()
 	}
 
@@ -84,10 +84,16 @@ func main() {
 	}
 }
 
-func mustInitMemStore(ctx context.Context, cnf *config.Config) *inmem.MemTimeseriesStorage {
-	memStore := inmem.New()
+func mustInitMetricsInmemStore(ctx context.Context, cnf *config.Config) *inmem.Storage[models.MetricKey, models.Metric] {
+	memStore := inmem.New[models.MetricKey, models.Metric]()
 
-	err := memStore.InitBackup(ctx, cnf.FileStoragePath, cnf.StoreInterval, map[string]any{
+	backupFilepath := cnf.FileStoragePath
+	backupFile, err := os.OpenFile(backupFilepath, os.O_CREATE|os.O_RDWR, 0666)
+	if err != nil {
+		logger.Fatalf("failed to open file for backup %s: %v", backupFilepath, err)
+	}
+
+	err = memStore.InitBackup(ctx, backupFile, cnf.StoreInterval, map[string]any{
 		"Metric":             models.Metric{},
 		"Int64MetricValue":   models.NewInt64MetricValue(0),
 		"Float64MetricValue": models.NewFloat64MetricValue(0),

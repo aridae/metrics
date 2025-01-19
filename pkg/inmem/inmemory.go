@@ -2,75 +2,55 @@ package inmem
 
 import (
 	"context"
-	"os"
-	"sort"
 	"sync"
 	"time"
 )
 
-type Key string
-
-func (k Key) String() string {
-	return string(k)
+type file interface {
+	Read(p []byte) (n int, err error)
+	Write(p []byte) (n int, err error)
+	Truncate(size int64) error
+	Seek(offset int64, whence int) (ret int64, err error)
+	Close() error
 }
 
-type TimeseriesValue interface {
-	GetDatetime() time.Time
-}
-
-type MemTimeseriesStorage struct {
+type Storage[Key comparable, Value any] struct {
 	storeMu sync.RWMutex
-	store   map[Key][]TimeseriesValue
+	store   map[Key]Value
 
-	fileMu         sync.RWMutex
-	backupFile     *os.File
+	backupFileMu   sync.RWMutex
+	backupFile     file
 	backupInterval time.Duration
 }
 
-func New() *MemTimeseriesStorage {
-	return &MemTimeseriesStorage{
-		store: make(map[Key][]TimeseriesValue),
-	}
+func New[Key comparable, Value any]() *Storage[Key, Value] {
+	return &Storage[Key, Value]{store: make(map[Key]Value)}
 }
 
-func (mem *MemTimeseriesStorage) Save(_ context.Context, key Key, value TimeseriesValue) {
-	mem.storeMu.Lock()
-	defer mem.storeMu.Unlock()
+func (s *Storage[Key, Value]) Save(_ context.Context, key Key, value Value) {
+	s.storeMu.Lock()
+	defer s.storeMu.Unlock()
 
-	timeseries := mem.store[key]
-
-	timeseries = append(timeseries, value)
-
-	sort.SliceStable(timeseries, func(i, j int) bool {
-		return timeseries[i].GetDatetime().Before(timeseries[j].GetDatetime())
-	})
-
-	mem.store[key] = timeseries
+	s.store[key] = value
 }
 
-func (mem *MemTimeseriesStorage) GetLatest(_ context.Context, key Key) TimeseriesValue {
-	mem.storeMu.RLock()
-	defer mem.storeMu.RUnlock()
+func (s *Storage[Key, Value]) Get(_ context.Context, key Key) (Value, bool) {
+	s.storeMu.RLock()
+	defer s.storeMu.RUnlock()
 
-	timeseries := mem.store[key]
-	if len(timeseries) == 0 {
-		return nil
-	}
+	val, ok := s.store[key]
 
-	return timeseries[len(timeseries)-1]
+	return val, ok
 }
 
-func (mem *MemTimeseriesStorage) GetAllLatest(_ context.Context) []TimeseriesValue {
-	mem.storeMu.RLock()
-	defer mem.storeMu.RUnlock()
+func (s *Storage[Key, Value]) GetAll(_ context.Context) []Value {
+	s.storeMu.RLock()
+	defer s.storeMu.RUnlock()
 
-	res := make([]TimeseriesValue, 0, len(mem.store))
-	for _, timeseries := range mem.store {
-		if len(timeseries) == 0 {
-			continue
-		}
-		res = append(res, timeseries[len(timeseries)-1])
+	vals := make([]Value, 0, len(s.store))
+	for _, v := range s.store {
+		vals = append(vals, v)
 	}
 
-	return res
+	return vals
 }
