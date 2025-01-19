@@ -2,9 +2,18 @@ package inmem
 
 import (
 	"context"
+	"encoding/gob"
 	"sync"
 	"time"
 )
+
+type encoder interface {
+	Encode(e any) error
+}
+
+type decoder interface {
+	Decode(e any) error
+}
 
 type file interface {
 	Read(p []byte) (n int, err error)
@@ -21,10 +30,21 @@ type Storage[Key comparable, Value any] struct {
 	backupFileMu   sync.RWMutex
 	backupFile     file
 	backupInterval time.Duration
+
+	provideFileEncoder  func(backupFile file) encoder
+	providerFileDecoder func(backupFile file) decoder
 }
 
 func New[Key comparable, Value any]() *Storage[Key, Value] {
-	return &Storage[Key, Value]{store: make(map[Key]Value)}
+	return &Storage[Key, Value]{
+		store: make(map[Key]Value),
+		provideFileEncoder: func(backupFile file) encoder {
+			return gob.NewEncoder(backupFile)
+		},
+		providerFileDecoder: func(backupFile file) decoder {
+			return gob.NewDecoder(backupFile)
+		},
+	}
 }
 
 func (s *Storage[Key, Value]) Save(_ context.Context, key Key, value Value) {

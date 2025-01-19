@@ -78,6 +78,10 @@ func NewRouter(useCasesController useCasesController, options ...RouterOption) *
 
 	chiMux.HandleFunc(getAllMetricValuesURLPath, router.getAllMetricsHTMLHandler)
 
+	if opts.serveDebugPprof {
+		chiMux.Mount(opts.debugPprofPattern, http.DefaultServeMux)
+	}
+
 	return router
 }
 
@@ -87,6 +91,8 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 type routerOpts struct {
 	checkAvailableOnPing []pingable
+	serveDebugPprof      bool
+	debugPprofPattern    string
 }
 
 type RouterOption func(opts *routerOpts)
@@ -94,5 +100,12 @@ type RouterOption func(opts *routerOpts)
 func CheckAvailableOnPing(dep pingable) RouterOption {
 	return func(opts *routerOpts) {
 		opts.checkAvailableOnPing = append(opts.checkAvailableOnPing, dep)
+	}
+}
+
+func WithDebugPprof(pattern string) RouterOption {
+	return func(opts *routerOpts) {
+		opts.serveDebugPprof = true
+		opts.debugPprofPattern = pattern
 	}
 }

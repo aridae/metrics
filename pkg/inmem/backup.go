@@ -70,7 +70,7 @@ func (s *Storage[Key, Value]) dumpBackup() error {
 	s.backupFile.Truncate(0) //nolint:errcheck
 	s.backupFile.Seek(0, 0)  //nolint:errcheck
 
-	return gob.NewEncoder(s.backupFile).Encode(s.store)
+	return s.provideFileEncoder(s.backupFile).Encode(s.store)
 }
 
 func (s *Storage[Key, Value]) LoadFromBackup() error {
@@ -84,7 +84,7 @@ func (s *Storage[Key, Value]) LoadFromBackup() error {
 	defer s.storeMu.Unlock()
 
 	newStore := s.store
-	err := gob.NewDecoder(s.backupFile).Decode(&newStore)
+	err := s.providerFileDecoder(s.backupFile).Decode(&newStore)
 	if err == io.EOF {
 		logger.Infof("backup file is empty, nothing to load")
 		return nil
