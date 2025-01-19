@@ -3,6 +3,8 @@ package inmem
 import (
 	"context"
 	"github.com/stretchr/testify/require"
+	"math/rand"
+	"strconv"
 	"sync"
 	"testing"
 )
@@ -22,6 +24,49 @@ func TestSaveAndGet(t *testing.T) {
 	gotVal, found := storage.Get(ctx, key)
 	if !found || gotVal != value {
 		t.Errorf("Expected to find %q with value %q, but found %v", key, value, gotVal)
+	}
+}
+
+// BenchmarkSave измеряет производительность метода Save.
+func BenchmarkSave(b *testing.B) {
+	ctx := context.Background()
+
+	// Создаем хранилище
+	s := New[string, string]()
+
+	keys := make([]string, b.N)
+	values := make([]string, b.N)
+	for i := 0; i < b.N; i++ {
+		keys[i] = strconv.Itoa(i)
+		values[i] = "test value"
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		s.Save(ctx, keys[i], values[i])
+	}
+}
+
+// BenchmarkGet измеряет производительность метода Get.
+func BenchmarkGet(b *testing.B) {
+	ctx := context.Background()
+
+	// Создаем хранилище и заполняем его данными
+	s := New[string, string]()
+	for i := 0; i < b.N; i++ {
+		key := strconv.Itoa(i)
+		value := "test value"
+		s.Save(ctx, key, value)
+	}
+
+	keys := make([]string, b.N)
+	for i := 0; i < b.N; i++ {
+		keys[i] = strconv.Itoa(rand.Intn(b.N))
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		s.Get(ctx, keys[i])
 	}
 }
 
@@ -58,6 +103,24 @@ func TestGetAll(t *testing.T) {
 	actualValues := storage.GetAll(ctx)
 
 	require.ElementsMatch(t, expectedValues, actualValues)
+}
+
+// BenchmarkGetAll измеряет производительность метода GetAll.
+func BenchmarkGetAll(b *testing.B) {
+	ctx := context.Background()
+
+	// Создаем хранилище и заполняем его данными
+	s := New[string, string]()
+	for i := 0; i < b.N; i++ {
+		key := strconv.Itoa(i)
+		value := "test string"
+		s.Save(ctx, key, value)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		s.GetAll(ctx)
+	}
 }
 
 // TestConcurrentAccess проверяет безопасность конкурентного доступа к хранилищу.
