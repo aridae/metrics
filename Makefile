@@ -49,18 +49,3 @@ bench:
 .PHONY: benchcmp
 benchcmp:
 	benchcmp ${old} ${new}
-
-.PHONY: autotest_14
-autotest_14: export METRICSTEST := ${LOCALBIN}/metricstest
-autotest_14: export AGENTBIN := ${LOCALBIN}/agent
-autotest_14: export SERVERBIN := ${LOCALBIN}/server
-autotest_14: build-agent build-server
-	PATH=${PATH}:${LOCALBIN} ${METRICSTEST} -test.v \
-	-test.run=^TestIteration14$$ \
-	-agent-binary-path=${AGENTBIN} \
-	-binary-path=${SERVERBIN} \
-	-server-port=8080 \
-	-source-path=. \
-	-file-storage-path=/tmp/metrics-tests-db.json \
-	-database-dsn=postgresql://metrics-store-user:metrics-store-pass@localhost:5432/metrics-store \
-	-key=123

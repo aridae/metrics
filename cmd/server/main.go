@@ -25,6 +25,8 @@ import (
 	"github.com/aridae/go-metrics-store/pkg/inmem"
 	"github.com/aridae/go-metrics-store/pkg/postgres"
 	trmman "github.com/avito-tech/go-transaction-manager/trm/v2/manager"
+
+	_ "net/http/pprof" // подключаем пакет pprof
 )
 
 func main() {
@@ -68,6 +70,8 @@ func main() {
 	}
 
 	useCaseController := usecases.NewController(metricRepo, txManager)
+
+	routerOptions = append(routerOptions, handlers.WithDebugPprof("/debug/pprof/"))
 
 	httpRouter := handlers.NewRouter(useCaseController, routerOptions...)
 
