@@ -23,6 +23,12 @@ func (rt *Router) updateMetricJSONHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	err = transportMetric.Validate()
+	if err != nil {
+		mustWriteJSONError(w, err, http.StatusBadRequest)
+		return
+	}
+
 	metric, err := buildMetricDomainModel(transportMetric)
 	if err != nil {
 		mustWriteJSONError(w, err, http.StatusBadRequest)

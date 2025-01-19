@@ -6,45 +6,39 @@ import (
 	"fmt"
 	"github.com/aridae/go-metrics-store/pkg/logger"
 	"io"
-	"os"
 	"time"
 )
 
-func (mem *MemTimeseriesStorage) InitBackup(
+func (s *Storage[Key, Value]) InitBackup(
 	ctx context.Context,
-	backupFilepath string,
+	backupFile file,
 	backupInterval time.Duration,
 	registerTypes map[string]any,
 ) error {
-	backupFile, err := os.OpenFile(backupFilepath, os.O_CREATE|os.O_RDWR, 0666)
-	if err != nil {
-		return fmt.Errorf("failed to open file for backup %s: %w", backupFilepath, err)
-	}
-
-	mem.backupFile = backupFile
-	mem.backupInterval = backupInterval
+	s.backupFile = backupFile
+	s.backupInterval = backupInterval
 
 	// register types for gob serialization
 	for name, val := range registerTypes {
 		gob.RegisterName(name, val)
 	}
 
-	go mem.runBackupLoop(ctx)
+	go s.runBackupLoop(ctx)
 
 	return nil
 }
 
-func (mem *MemTimeseriesStorage) runBackupLoop(ctx context.Context) {
-	ticker := time.NewTicker(mem.backupInterval)
+func (s *Storage[Key, Value]) runBackupLoop(ctx context.Context) {
+	ticker := time.NewTicker(s.backupInterval)
 	defer func() {
-		mem.shutBackup()
+		s.shutBackup()
 	}()
 
 	for {
 		select {
 		case <-ticker.C:
-			if err := mem.dumpBackup(); err != nil {
-				logger.Errorf("[timeseriesstorage.MemTimeseriesStorage.runBackupLoop][CRITICAL] failed to dump data to backup file: %v", err)
+			if err := s.dumpBackup(); err != nil {
+				logger.Errorf("[timeseriesstorage.Storage.runBackupLoop][CRITICAL] failed to dump data to backup file: %v", err)
 			}
 		case <-ctx.Done():
 			logger.Infof("stopping backup service downstreams...")
@@ -53,12 +47,13 @@ func (mem *MemTimeseriesStorage) runBackupLoop(ctx context.Context) {
 	}
 }
 
-func (mem *MemTimeseriesStorage) shutBackup() {
-	mem.fileMu.Lock()
-	defer mem.fileMu.Unlock()
+func (s *Storage[Key, Value]) shutBackup() {
+	s.backupFileMu.Lock()
+	defer s.backupFileMu.Unlock()
 
 	logger.Infof("closing backup file...")
-	err := mem.backupFile.Close()
+
+	err := s.backupFile.Close()
 	if err != nil {
 		logger.Errorf("failed to close backup file: %v", err)
 	}
@@ -66,31 +61,30 @@ func (mem *MemTimeseriesStorage) shutBackup() {
 	logger.Infof("backup is shut")
 }
 
-func (mem *MemTimeseriesStorage) dumpBackup() error {
-	mem.fileMu.Lock()
-	mem.storeMu.RLock()
-	defer mem.fileMu.Unlock()
-	defer mem.storeMu.RUnlock()
+func (s *Storage[Key, Value]) dumpBackup() error {
+	s.backupFileMu.Lock()
+	s.storeMu.RLock()
+	defer s.backupFileMu.Unlock()
+	defer s.storeMu.RUnlock()
 
-	// NOTE: а есть способ сделать это более элегантно? Рыдаю ToT
-	mem.backupFile.Truncate(0) //nolint:errcheck
-	mem.backupFile.Seek(0, 0)  //nolint:errcheck
+	s.backupFile.Truncate(0) //nolint:errcheck
+	s.backupFile.Seek(0, 0)  //nolint:errcheck
 
-	return gob.NewEncoder(mem.backupFile).Encode(mem.store)
+	return gob.NewEncoder(s.backupFile).Encode(s.store)
 }
 
-func (mem *MemTimeseriesStorage) LoadFromBackup() error {
-	if mem.backupFile == nil {
+func (s *Storage[Key, Value]) LoadFromBackup() error {
+	if s.backupFile == nil {
 		return fmt.Errorf("no backup file found, make sure to call InitBackup() method to init backing options before loading from backup file")
 	}
 
-	mem.fileMu.RLock()
-	mem.storeMu.Lock()
-	defer mem.fileMu.RUnlock()
-	defer mem.storeMu.Unlock()
+	s.backupFileMu.RLock()
+	s.storeMu.Lock()
+	defer s.backupFileMu.RUnlock()
+	defer s.storeMu.Unlock()
 
-	newStore := mem.store
-	err := gob.NewDecoder(mem.backupFile).Decode(&newStore)
+	newStore := s.store
+	err := gob.NewDecoder(s.backupFile).Decode(&newStore)
 	if err == io.EOF {
 		logger.Infof("backup file is empty, nothing to load")
 		return nil

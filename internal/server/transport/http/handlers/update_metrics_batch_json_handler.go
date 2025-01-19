@@ -17,8 +17,14 @@ func (rt *Router) updateMetricsBatchJSONHandler(w http.ResponseWriter, r *http.R
 	}
 	ctx := r.Context()
 
-	var transportMetrics []httpmodels.Metric
+	var transportMetrics httpmodels.Metrics
 	err := json.NewDecoder(r.Body).Decode(&transportMetrics)
+	if err != nil {
+		mustWriteJSONError(w, err, http.StatusBadRequest)
+		return
+	}
+
+	err = transportMetrics.Validate()
 	if err != nil {
 		mustWriteJSONError(w, err, http.StatusBadRequest)
 		return
