@@ -44,10 +44,10 @@ func (mem *MemTimeseriesStorage) runBackupLoop(ctx context.Context) {
 		select {
 		case <-ticker.C:
 			if err := mem.dumpBackup(); err != nil {
-				logger.Obtain().Errorf("[timeseriesstorage.MemTimeseriesStorage.runBackupLoop][CRITICAL] failed to dump data to backup file: %v", err)
+				logger.Errorf("[timeseriesstorage.MemTimeseriesStorage.runBackupLoop][CRITICAL] failed to dump data to backup file: %v", err)
 			}
 		case <-ctx.Done():
-			logger.Obtain().Info("stopping backup service downstreams...")
+			logger.Infof("stopping backup service downstreams...")
 			return
 		}
 	}
@@ -57,13 +57,13 @@ func (mem *MemTimeseriesStorage) shutBackup() {
 	mem.fileMu.Lock()
 	defer mem.fileMu.Unlock()
 
-	logger.Obtain().Info("closing backup file...")
+	logger.Infof("closing backup file...")
 	err := mem.backupFile.Close()
 	if err != nil {
-		logger.Obtain().Errorf("failed to close backup file: %v", err)
+		logger.Errorf("failed to close backup file: %v", err)
 	}
 
-	logger.Obtain().Info("backup is shut")
+	logger.Infof("backup is shut")
 }
 
 func (mem *MemTimeseriesStorage) dumpBackup() error {
@@ -92,7 +92,7 @@ func (mem *MemTimeseriesStorage) LoadFromBackup() error {
 	newStore := mem.store
 	err := gob.NewDecoder(mem.backupFile).Decode(&newStore)
 	if err == io.EOF {
-		logger.Obtain().Info("backup file is empty, nothing to load")
+		logger.Infof("backup file is empty, nothing to load")
 		return nil
 	}
 

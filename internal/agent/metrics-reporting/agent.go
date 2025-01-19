@@ -39,7 +39,7 @@ func (a *Agent) Run(ctx context.Context) {
 	metricsQueue := make(chan metricsPack, 1000)
 	go func() {
 		<-ctx.Done()
-		logger.Obtain().Errorf("stopping agent due to context cancellation: %v", ctx.Err())
+		logger.Errorf("stopping agent due to context cancellation: %v", ctx.Err())
 		close(metricsQueue)
 	}()
 
@@ -72,10 +72,10 @@ func (a *Agent) runPollingRuntimeLoop(ctx context.Context, metricsQueue chan<- m
 	for {
 		select {
 		case <-ctx.Done():
-			logger.Obtain().Infof("stopping runPollingRuntimeLoop routine due to context cancellation")
+			logger.Infof("stopping runPollingRuntimeLoop routine due to context cancellation")
 			return
 		case <-pollTick.C:
-			logger.Obtain().Infof("starting PollingRuntime routine <now:%s>", time.Now().UTC())
+			logger.Infof("starting PollingRuntime routine <now:%s>", time.Now().UTC())
 
 			pack := pollRuntime(ctx)
 
@@ -89,14 +89,14 @@ func (a *Agent) runPollingGopsutilLoop(ctx context.Context, metricsQueue chan<- 
 	for {
 		select {
 		case <-ctx.Done():
-			logger.Obtain().Infof("stopping runPollingGopsutilLoop routine due to context cancellation")
+			logger.Infof("stopping runPollingGopsutilLoop routine due to context cancellation")
 			return
 		case <-pollTick.C:
-			logger.Obtain().Infof("starting PollingGopsutil routine <now:%s>", time.Now().UTC())
+			logger.Infof("starting PollingGopsutil routine <now:%s>", time.Now().UTC())
 
 			pack, err := pollGopsutil(ctx)
 			if err != nil {
-				logger.Obtain().Errorf("error while polling gopsutil: %v", err)
+				logger.Errorf("error while polling gopsutil: %v", err)
 				continue
 			}
 
@@ -110,18 +110,18 @@ func (a *Agent) runReportingWorkerLoop(ctx context.Context, reporterID int64, me
 	for {
 		select {
 		case <-ctx.Done():
-			logger.Obtain().Infof("stopping reporter worker #%d due to context cancellation", reporterID)
+			logger.Infof("stopping reporter worker #%d due to context cancellation", reporterID)
 			return
 		case <-reportTick.C:
 			pack, err := dequeueMetricsPack(ctx, metricsQueue)
 			if err != nil {
-				logger.Obtain().Errorf("reporter worker #%d failed dequeue metrics to report: %v", reporterID, err)
+				logger.Errorf("reporter worker #%d failed dequeue metrics to report: %v", reporterID, err)
 				continue
 			}
 
-			logger.Obtain().Infof("reporter worker #%d received metrics pack to report", reporterID)
+			logger.Infof("reporter worker #%d received metrics pack to report", reporterID)
 			if err = reportMetricWithJSONPayload(ctx, a.metricsService, pack); err != nil {
-				logger.Obtain().Errorf("reporter worker #%d failed to report metrics: %v", reporterID, err)
+				logger.Errorf("reporter worker #%d failed to report metrics: %v", reporterID, err)
 			}
 		}
 	}
@@ -131,7 +131,7 @@ func queueMetricsPack(ctx context.Context, pack metricsPack, metricsQueue chan<-
 	select {
 	case metricsQueue <- pack:
 	case <-ctx.Done():
-		logger.Obtain().Infof("terminating queueMetricsPack due to context cancellation")
+		logger.Infof("terminating queueMetricsPack due to context cancellation")
 		return
 	}
 }
@@ -141,7 +141,7 @@ func dequeueMetricsPack(ctx context.Context, metricsQueue <-chan metricsPack) (m
 	case pack := <-metricsQueue:
 		return pack, nil
 	case <-ctx.Done():
-		logger.Obtain().Infof("terminating dequeueMetricsPack due to context cancellation")
+		logger.Infof("terminating dequeueMetricsPack due to context cancellation")
 		return metricsPack{}, ctx.Err()
 	}
 }

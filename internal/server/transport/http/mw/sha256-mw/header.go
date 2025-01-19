@@ -4,7 +4,6 @@ import "net/http"
 
 const (
 	sha256Header                          = "HashSHA256"
-	requestForbiddenNoSignatureMessage    = "Forbidden: request must be signed"
 	requestForbiddenWrongSignatureMessage = "Forbidden: wrong signature"
 )
 

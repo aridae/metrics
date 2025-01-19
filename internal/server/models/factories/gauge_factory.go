@@ -1,4 +1,4 @@
-package metricsfabrics
+package factories
 
 import (
 	"fmt"

@@ -10,6 +10,8 @@ import (
 )
 
 func (r *repo) GetByKey(ctx context.Context, key models.MetricKey) (*models.Metric, error) {
+	queryable := r.txGetter.DefaultTrOrDB(ctx, r.db)
+
 	qb := baseSelectQuery.Where(squirrel.Eq{keyColumn: key.String()})
 
 	sql, args, err := qb.ToSql()
@@ -17,7 +19,7 @@ func (r *repo) GetByKey(ctx context.Context, key models.MetricKey) (*models.Metr
 		return nil, fmt.Errorf("failed to build query: %w", err)
 	}
 
-	rows, err := r.db.Query(ctx, sql, args...)
+	rows, err := queryable.Query(ctx, sql, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query: %w", err)
 	}
@@ -42,6 +44,8 @@ func (r *repo) GetByKey(ctx context.Context, key models.MetricKey) (*models.Metr
 }
 
 func (r *repo) GetAll(ctx context.Context) ([]models.Metric, error) {
+	queryable := r.txGetter.DefaultTrOrDB(ctx, r.db)
+
 	qb := baseSelectQuery.OrderBy(keyColumn)
 
 	sql, args, err := qb.ToSql()
@@ -49,7 +53,7 @@ func (r *repo) GetAll(ctx context.Context) ([]models.Metric, error) {
 		return nil, fmt.Errorf("failed to build query: %w", err)
 	}
 
-	rows, err := r.db.Query(ctx, sql, args...)
+	rows, err := queryable.Query(ctx, sql, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query: %w", err)
 	}

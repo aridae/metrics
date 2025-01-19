@@ -17,10 +17,49 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
+// MocktransactionManager is a mock of transactionManager interface.
+type MocktransactionManager struct {
+	ctrl     *gomock.Controller
+	recorder *MocktransactionManagerMockRecorder
+	isgomock struct{}
+}
+
+// MocktransactionManagerMockRecorder is the mock recorder for MocktransactionManager.
+type MocktransactionManagerMockRecorder struct {
+	mock *MocktransactionManager
+}
+
+// NewMocktransactionManager creates a new mock instance.
+func NewMocktransactionManager(ctrl *gomock.Controller) *MocktransactionManager {
+	mock := &MocktransactionManager{ctrl: ctrl}
+	mock.recorder = &MocktransactionManagerMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MocktransactionManager) EXPECT() *MocktransactionManagerMockRecorder {
+	return m.recorder
+}
+
+// Do mocks base method.
+func (m *MocktransactionManager) Do(ctx context.Context, fn func(context.Context) error) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Do", ctx, fn)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Do indicates an expected call of Do.
+func (mr *MocktransactionManagerMockRecorder) Do(ctx, fn any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MocktransactionManager)(nil).Do), ctx, fn)
+}
+
 // MockmetricsRepo is a mock of metricsRepo interface.
 type MockmetricsRepo struct {
 	ctrl     *gomock.Controller
 	recorder *MockmetricsRepoMockRecorder
+	isgomock struct{}
 }
 
 // MockmetricsRepoMockRecorder is the mock recorder for MockmetricsRepo.
@@ -40,7 +79,7 @@ func (m *MockmetricsRepo) EXPECT() *MockmetricsRepoMockRecorder {
 	return m.recorder
 }
 
-// GetAllLatestStates mocks base method.
+// GetAll mocks base method.
 func (m *MockmetricsRepo) GetAll(ctx context.Context) ([]models.Metric, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAll", ctx)
@@ -49,13 +88,13 @@ func (m *MockmetricsRepo) GetAll(ctx context.Context) ([]models.Metric, error) {
 	return ret0, ret1
 }
 
-// GetAllLatestStates indicates an expected call of GetAllLatestStates.
-func (mr *MockmetricsRepoMockRecorder) GetAllLatestStates(ctx any) *gomock.Call {
+// GetAll indicates an expected call of GetAll.
+func (mr *MockmetricsRepoMockRecorder) GetAll(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockmetricsRepo)(nil).GetAll), ctx)
 }
 
-// GetLatestState mocks base method.
+// GetByKey mocks base method.
 func (m *MockmetricsRepo) GetByKey(ctx context.Context, key models.MetricKey) (*models.Metric, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByKey", ctx, key)
@@ -64,8 +103,8 @@ func (m *MockmetricsRepo) GetByKey(ctx context.Context, key models.MetricKey) (*
 	return ret0, ret1
 }
 
-// GetLatestState indicates an expected call of GetLatestState.
-func (mr *MockmetricsRepoMockRecorder) GetLatestState(ctx, key any) *gomock.Call {
+// GetByKey indicates an expected call of GetByKey.
+func (mr *MockmetricsRepoMockRecorder) GetByKey(ctx, key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByKey", reflect.TypeOf((*MockmetricsRepo)(nil).GetByKey), ctx, key)
 }

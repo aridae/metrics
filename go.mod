@@ -4,6 +4,7 @@ go 1.22.5
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2 v2.0.0
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/georgysavva/scany/v2 v2.1.3
 	github.com/go-chi/chi/v5 v5.1.0
@@ -11,11 +12,13 @@ require (
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/stretchr/testify v1.9.0
+	go.uber.org/mock v0.5.0
 	go.uber.org/zap v1.27.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
+	github.com/avito-tech/go-transaction-manager/trm/v2 v2.0.0-rc10 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect

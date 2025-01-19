@@ -5,8 +5,8 @@ import (
 	"github.com/aridae/go-metrics-store/internal/agent/config"
 	metricsservice "github.com/aridae/go-metrics-store/internal/agent/downstreams/metrics-service"
 	metricsreporting "github.com/aridae/go-metrics-store/internal/agent/metrics-reporting"
+	"github.com/aridae/go-metrics-store/internal/server/transport/http/mw/sha256-mw"
 	"github.com/aridae/go-metrics-store/pkg/logger"
-	sha256mw "github.com/aridae/go-metrics-store/pkg/sha256-mw"
 	"os"
 	"os/signal"
 	"syscall"
@@ -20,7 +20,7 @@ func main() {
 
 		<-signalCh
 
-		logger.Obtain().Info("Got signal, shutting down...")
+		logger.Infof("Got signal, shutting down...")
 
 		// If you fail to cancel the context, the goroutine that WithCancel or WithTimeout created
 		// will be retained in memory indefinitely (until the program shuts down), causing a memory leak.
