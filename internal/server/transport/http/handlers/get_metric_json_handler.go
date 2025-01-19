@@ -23,6 +23,12 @@ func (rt *Router) getMetricJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = transportMetricRequest.Validate()
+	if err != nil {
+		mustWriteJSONError(w, err, http.StatusBadRequest)
+		return
+	}
+
 	metricFactory, err := resolveMetricFactoryForMetricType(transportMetricRequest.MType)
 	if err != nil {
 		mustWriteJSONError(w, err, http.StatusBadRequest)
@@ -61,8 +67,6 @@ func mustWriteJSONError(w http.ResponseWriter, err error, code int) {
 		Message: err.Error(),
 	}
 
-	errMessagePayload, _ := json.Marshal(errMsg)
-
-	_, _ = w.Write(errMessagePayload)
 	w.WriteHeader(code)
+	_ = json.NewEncoder(w).Encode(errMsg)
 }

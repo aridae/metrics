@@ -9,9 +9,8 @@ import (
 )
 
 type testKit struct {
-	metricsRepoMock        *_mock.MockmetricsRepo
-	transactionManagerStub transactionManager
-	controller             *Controller
+	metricsRepoMock *_mock.MockmetricsRepo
+	controller      *Controller
 }
 
 func setupTestKit(t *testing.T, now time.Time) *testKit {

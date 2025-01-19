@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"context"
+	"github.com/aridae/go-metrics-store/internal/server/models"
+	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers/_mock"
+	"go.uber.org/mock/gomock"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers/_stub"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,6 +20,9 @@ func Test_getUpdateMetricByURLPathHandler_TableTest(t *testing.T) {
 		httpMethod  string
 		urlEndpoint string
 		chiParams   map[string]string
+
+		expectedMetricToUpsert *models.MetricUpsert
+		mockControllerErr      error
 	}
 
 	type want struct {
@@ -159,6 +164,11 @@ func Test_getUpdateMetricByURLPathHandler_TableTest(t *testing.T) {
 					urlParamMetricName:  "testName",
 					urlParamMetricValue: "123",
 				},
+				expectedMetricToUpsert: &models.MetricUpsert{
+					MName: "testName",
+					Mtype: models.MetricTypeCounter,
+					Val:   models.NewInt64MetricValue(123),
+				},
 			},
 			want: want{
 				httpCode: http.StatusOK,
@@ -174,6 +184,11 @@ func Test_getUpdateMetricByURLPathHandler_TableTest(t *testing.T) {
 					urlParamMetricName:  "testName",
 					urlParamMetricValue: "123.5",
 				},
+				expectedMetricToUpsert: &models.MetricUpsert{
+					MName: "testName",
+					Mtype: models.MetricTypeGauge,
+					Val:   models.NewFloat64MetricValue(123.5),
+				},
 			},
 			want: want{
 				httpCode: http.StatusOK,
@@ -183,18 +198,25 @@ func Test_getUpdateMetricByURLPathHandler_TableTest(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			req := httptest.NewRequest(test.prereq.httpMethod, test.prereq.urlEndpoint, nil)
-
 			rctx := chi.NewRouteContext()
 			for k, v := range test.prereq.chiParams {
 				rctx.URLParams.Add(k, v)
 			}
 
+			req := httptest.NewRequest(test.prereq.httpMethod, test.prereq.urlEndpoint, nil)
 			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+			ctrl := gomock.NewController(t)
+			controllerMock := _mock.NewMockuseCasesController(ctrl)
+			if test.prereq.expectedMetricToUpsert != nil {
+				controllerMock.EXPECT().
+					UpsertMetric(gomock.Any(), *test.prereq.expectedMetricToUpsert).
+					Return(models.Metric{}, test.prereq.mockControllerErr)
+			}
 
 			w := httptest.NewRecorder()
 
-			router := NewRouter(&_stub.ControllerNoErrStub{})
+			router := NewRouter(controllerMock)
 			router.updateMetricByURLPathHandler(w, req)
 
 			resp := w.Result()

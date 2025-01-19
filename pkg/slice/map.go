@@ -14,11 +14,3 @@ func MapBatch[In any, Out any](ins []In, mapperFn func(in In) (Out, error)) ([]O
 
 	return outs, nil
 }
-
-func MapBatchNoErr[In any, Out any](ins []In, mapperFn func(in In) Out) []Out {
-	mapperWrapperFn := func(in In) (Out, error) {
-		return mapperFn(in), nil
-	}
-	outs, _ := MapBatch(ins, mapperWrapperFn)
-	return outs
-}
