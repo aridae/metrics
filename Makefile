@@ -42,10 +42,30 @@ test-coverage:
 	go test ./... -coverpkg=./... -coverprofile=${COVERAGE_OUT_FILE} -vet=all
 	go tool cover -func=${COVERAGE_OUT_FILE}
 
+# usage: make pprof-http pprof-port=9091 app-port=8081 profile=heap seconds=30
+.PHONY: pprof-http
+pprof-http:
+	go tool pprof -http=":${pprof-port}" -seconds=${seconds} http://127.0.0.1:${app-port}/debug/pprof/${profile}
+
+# usage: make pprof app-port=8081 profile=heap seconds=30
+.PHONY: pprof-cli
+pprof-cli:
+	go tool pprof -seconds=${seconds} http://127.0.0.1:${app-port}/debug/pprof/${profile}
+
+# usage: make pprof-text app-port=8081 profile=heap seconds=30 output=base.pprof
+.PHONY: pprof-text
+pprof-text:
+	go tool pprof --text -seconds=${seconds} http://127.0.0.1:${app-port}/debug/pprof/${profile} > ${output}
+
+
+# usage: make bench out=filename.txt
 .PHONY: bench
 bench:
 	go test ./... -bench=./... -benchmem > ${out}
 
-.PHONY: benchcmp
-benchcmp:
-	benchcmp ${old} ${new}
+# usage: make benchstat old=old.txt new=new.txt
+.PHONY: benchstat
+benchstat: export BENCHSTATBIN := ${LOCALBIN}/benchstat
+benchstat:
+	test -f ${BENCHSTATBIN} || GOBIN=${LOCALBIN} go install golang.org/x/perf/cmd/benchstat@latest
+	PATH=${PATH}:${LOCALBIN} ${BENCHSTATBIN} ${old} ${new}

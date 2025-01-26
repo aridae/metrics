@@ -12,6 +12,8 @@ import (
 	nooptrm "github.com/aridae/go-metrics-store/pkg/noop-trm"
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/avito-tech/go-transaction-manager/trm/v2"
+	"github.com/avito-tech/go-transaction-manager/trm/v2/settings"
+	"github.com/jackc/pgx/v5"
 	"os"
 	"os/signal"
 	"syscall"
@@ -52,7 +54,15 @@ func main() {
 
 	if cnf.DatabaseDsn != "" {
 		pgClient := mustInitPostgresClient(ctx, cnf)
-		txManager = trmman.Must(trmpgx.NewDefaultFactory(pgClient))
+		txManager = trmman.Must(
+			trmpgx.NewDefaultFactory(pgClient),
+			trmman.WithSettings(trmpgx.MustSettings(
+				settings.Must(),
+				trmpgx.WithTxOptions(pgx.TxOptions{
+					IsoLevel: pgx.RepeatableRead,
+				}),
+			)),
+		)
 
 		var err error
 		metricRepo, err = metricpgrepo.NewRepositoryImplementation(ctx, pgClient, trmpgx.DefaultCtxGetter)
