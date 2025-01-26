@@ -47,6 +47,11 @@ func New[Key comparable, Value any]() *Storage[Key, Value] {
 	}
 }
 
+// Save сохраняет пару ключ-значение в хранилище.
+//
+// Аргументы:
+// key (Key): Ключ для сохранения.
+// value (Value): Значение для сохранения.
 func (s *Storage[Key, Value]) Save(_ context.Context, key Key, value Value) {
 	s.storeMu.Lock()
 	defer s.storeMu.Unlock()
@@ -54,6 +59,15 @@ func (s *Storage[Key, Value]) Save(_ context.Context, key Key, value Value) {
 	s.store[key] = value
 }
 
+// Get возвращает значение по указанному ключу.
+//
+// Аргументы:
+// _ (context.Context): Контекст выполнения запроса (не используется).
+// key (Key): Ключ для поиска значения.
+//
+// Возвращает:
+// Value: Найденное значение.
+// bool: Признак наличия ключа в хранилище.
 func (s *Storage[Key, Value]) Get(_ context.Context, key Key) (Value, bool) {
 	s.storeMu.RLock()
 	defer s.storeMu.RUnlock()
@@ -63,6 +77,13 @@ func (s *Storage[Key, Value]) Get(_ context.Context, key Key) (Value, bool) {
 	return val, ok
 }
 
+// GetAll возвращает все значения из хранилища.
+//
+// Аргументы:
+// _ (context.Context): Контекст выполнения запроса (не используется).
+//
+// Возвращает:
+// []Value: Все сохраненные значения.
 func (s *Storage[Key, Value]) GetAll(_ context.Context) []Value {
 	s.storeMu.RLock()
 	defer s.storeMu.RUnlock()

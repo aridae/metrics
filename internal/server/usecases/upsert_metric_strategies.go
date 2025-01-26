@@ -26,6 +26,17 @@ var upsertStrategyByType = map[models.MetricType]func(ctx context.Context, metri
 	models.MetricTypeCounter: upsertMetricIncrement,
 }
 
+// upsertMetricOverride обновляет состояние метрики или создает новое, если оно отсутствует.
+//
+// Аргументы:
+// ctx (context.Context): Контекст выполнения запроса.
+// metricsRepo (metricsRepo): Репозиторий для работы с метриками.
+// metricUpsert (models.MetricUpsert): Данные для обновления или создания метрики.
+// now (time.Time): Текущее время.
+//
+// Возвращает:
+// models.Metric: Обновленное или созданное состояние метрики.
+// error: Ошибка, если что-то пошло не так при сохранении состояния метрики.
 func upsertMetricOverride(ctx context.Context, metricsRepo metricsRepo, metricUpsert models.MetricUpsert, now time.Time) (models.Metric, error) {
 	newState := metricUpsert.WithDatetime(now)
 
@@ -37,6 +48,17 @@ func upsertMetricOverride(ctx context.Context, metricsRepo metricsRepo, metricUp
 	return newState, nil
 }
 
+// upsertMetricIncrement увеличивает значение метрики или создает новую, если она отсутствует.
+//
+// Аргументы:
+// ctx (context.Context): Контекст выполнения запроса.
+// metricsRepo (metricsRepo): Репозиторий для работы с метриками.
+// metricUpsert (models.MetricUpsert): Данные для увеличения или создания метрики.
+// now (time.Time): Текущее время.
+//
+// Возвращает:
+// models.Metric: Увеличившая или созданная метрика.
+// error: Ошибка, если что-то пошло не так при увеличении или сохранении метрики.
 func upsertMetricIncrement(ctx context.Context, metricsRepo metricsRepo, metricUpsert models.MetricUpsert, now time.Time) (models.Metric, error) {
 	prevState, err := metricsRepo.GetByKey(ctx, metricUpsert.GetKey())
 	if err != nil {
