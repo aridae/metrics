@@ -29,3 +29,4 @@ vendor/
 /internal/server/repos/scalar-metric/postgres-driven/
 
 postgres-compose.yaml
+.DS_Store

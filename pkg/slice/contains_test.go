@@ -1,6 +1,7 @@
 package slice
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -61,5 +62,25 @@ func TestContains(t *testing.T) {
 				t.Errorf("Expected %v, got %v for slice %v and target %v", tc.expected, actual, tc.slice, tc.target)
 			}
 		})
+	}
+}
+
+func BenchmarkContains(b *testing.B) {
+	targets := []int{0, 1, 100}
+
+	var testSlices = [][]int{
+		{1, 2, 3},
+		{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20},
+	}
+
+	for _, s := range testSlices {
+		for _, t := range targets {
+			b.Run(fmt.Sprintf("SliceSize:%d_Target:%d", len(s), t), func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					Contains(s, t)
+				}
+			})
+		}
 	}
 }

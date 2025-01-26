@@ -9,6 +9,16 @@ import (
 	"time"
 )
 
+// InitBackup инициализирует процесс резервного копирования хранилища.
+//
+// Аргументы:
+// ctx (context.Context): Контекст выполнения запроса.
+// backupFile (file): Файл для записи резервной копии.
+// backupInterval (time.Duration): Интервал между созданием резервных копий.
+// registerTypes (map[string]any): Типы для регистрации сериализации через gob.
+//
+// Возвращает:
+// error: Ошибка, если произошла ошибка при инициализации процесса резервного копирования.
 func (s *Storage[Key, Value]) InitBackup(
 	ctx context.Context,
 	backupFile file,
@@ -70,9 +80,13 @@ func (s *Storage[Key, Value]) dumpBackup() error {
 	s.backupFile.Truncate(0) //nolint:errcheck
 	s.backupFile.Seek(0, 0)  //nolint:errcheck
 
-	return gob.NewEncoder(s.backupFile).Encode(s.store)
+	return s.provideFileEncoder(s.backupFile).Encode(s.store)
 }
 
+// LoadFromBackup загружает данные из файла резервной копии в хранилище.
+//
+// Возвращает:
+// error: Ошибка, если произошла ошибка при загрузке данных из резервной копии.
 func (s *Storage[Key, Value]) LoadFromBackup() error {
 	if s.backupFile == nil {
 		return fmt.Errorf("no backup file found, make sure to call InitBackup() method to init backing options before loading from backup file")
@@ -84,7 +98,7 @@ func (s *Storage[Key, Value]) LoadFromBackup() error {
 	defer s.storeMu.Unlock()
 
 	newStore := s.store
-	err := gob.NewDecoder(s.backupFile).Decode(&newStore)
+	err := s.providerFileDecoder(s.backupFile).Decode(&newStore)
 	if err == io.EOF {
 		logger.Infof("backup file is empty, nothing to load")
 		return nil

@@ -8,6 +8,8 @@ import (
 	httpmodels "github.com/aridae/go-metrics-store/internal/server/transport/http/models"
 )
 
+var leakyGlobal []*httpmodels.Metrics
+
 func (rt *Router) updateMetricsBatchJSONHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
 
@@ -23,6 +25,9 @@ func (rt *Router) updateMetricsBatchJSONHandler(w http.ResponseWriter, r *http.R
 		mustWriteJSONError(w, err, http.StatusBadRequest)
 		return
 	}
+
+	// to capture inefficient memory usage in pprof
+	leakyGlobal = append(leakyGlobal, &transportMetrics)
 
 	err = transportMetrics.Validate()
 	if err != nil {
