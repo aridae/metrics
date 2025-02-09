@@ -67,7 +67,8 @@ func upsertMetricIncrement(ctx context.Context, metricsRepo metricsRepo, metricU
 
 	newState := metricUpsert.WithDatetime(now)
 	if prevState != nil {
-		newVal, err := prevState.GetValue().Inc(metricUpsert.GetValue())
+		var newVal models.MetricValue
+		newVal, err = prevState.GetValue().Inc(metricUpsert.GetValue())
 		if err != nil {
 			return models.Metric{}, fmt.Errorf("failed to do increment on prev metric state <key:%s>: %w", metricUpsert.GetKey(), err)
 		}
