@@ -2,11 +2,12 @@ package inmem
 
 import (
 	"context"
-	"github.com/stretchr/testify/require"
 	"math/rand"
 	"strconv"
 	"sync"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 // TestSaveAndGet проверяет корректность сохранения и получения значения по ключу.

@@ -2,10 +2,10 @@ package metricpgrepo
 
 import (
 	"fmt"
-	"github.com/aridae/go-metrics-store/internal/server/models/factories"
 	"time"
 
 	"github.com/aridae/go-metrics-store/internal/server/models"
+	"github.com/aridae/go-metrics-store/internal/server/models/factories"
 )
 
 type metricDTO struct {

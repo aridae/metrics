@@ -3,8 +3,9 @@ package http
 import (
 	"context"
 	"fmt"
-	"github.com/aridae/go-metrics-store/pkg/logger"
 	"net/http"
+
+	"github.com/aridae/go-metrics-store/pkg/logger"
 )
 
 type Server struct {

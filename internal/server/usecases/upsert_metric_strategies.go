@@ -3,8 +3,9 @@ package usecases
 import (
 	"context"
 	"fmt"
-	"github.com/aridae/go-metrics-store/internal/server/models"
 	"time"
+
+	"github.com/aridae/go-metrics-store/internal/server/models"
 )
 
 func upsert(ctx context.Context, metricsRepo metricsRepo, metricUpsert models.MetricUpsert, now time.Time) (models.Metric, error) {

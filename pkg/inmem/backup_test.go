@@ -2,11 +2,12 @@ package inmem
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/aridae/go-metrics-store/pkg/inmem/_mock"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
-	"testing"
-	"time"
 )
 
 // TestNew проверяет создание нового хранилища.

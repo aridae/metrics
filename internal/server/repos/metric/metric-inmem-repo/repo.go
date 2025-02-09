@@ -2,9 +2,10 @@ package metricinmemrepo
 
 import (
 	"context"
+	"sort"
+
 	"github.com/aridae/go-metrics-store/internal/server/models"
 	metricrepo "github.com/aridae/go-metrics-store/internal/server/repos/metric"
-	"sort"
 )
 
 type inmemoryStorage[Key comparable, Value any] interface {

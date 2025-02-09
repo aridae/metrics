@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/aridae/go-metrics-store/pkg/slice"
 	"net/http"
 
 	httpmodels "github.com/aridae/go-metrics-store/internal/server/transport/http/models"
+	"github.com/aridae/go-metrics-store/pkg/slice"
 )
 
 func (rt *Router) updateMetricsBatchJSONHandler(w http.ResponseWriter, r *http.Request) {

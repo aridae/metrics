@@ -2,10 +2,11 @@ package metricsreporting
 
 import (
 	"context"
-	metricsservice "github.com/aridae/go-metrics-store/internal/agent/downstreams/metrics-service"
-	"github.com/aridae/go-metrics-store/pkg/logger"
 	"sync"
 	"time"
+
+	metricsservice "github.com/aridae/go-metrics-store/internal/agent/downstreams/metrics-service"
+	"github.com/aridae/go-metrics-store/pkg/logger"
 )
 
 type metricsService interface {

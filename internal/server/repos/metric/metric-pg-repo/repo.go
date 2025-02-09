@@ -3,11 +3,12 @@ package metricpgrepo
 import (
 	"context"
 	"fmt"
+	"sync"
+
 	"github.com/aridae/go-metrics-store/internal/server/repos/metric"
 	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"sync"
 )
 
 var (

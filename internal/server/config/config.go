@@ -1,9 +1,10 @@
 package config
 
 import (
-	"github.com/aridae/go-metrics-store/pkg/logger"
 	"sync"
 	"time"
+
+	"github.com/aridae/go-metrics-store/pkg/logger"
 )
 
 const (

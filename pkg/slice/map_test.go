@@ -2,8 +2,9 @@ package slice
 
 import (
 	"errors"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestMapBatch(t *testing.T) {
