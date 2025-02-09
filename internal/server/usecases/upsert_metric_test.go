@@ -2,10 +2,11 @@ package usecases
 
 import (
 	"context"
-	"github.com/aridae/go-metrics-store/internal/server/models"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/aridae/go-metrics-store/internal/server/models"
+	"github.com/stretchr/testify/require"
 )
 
 func TestController_UpsertMetric_Happy_MetricTypeGauge(t *testing.T) {

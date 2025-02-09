@@ -14,9 +14,9 @@ const (
 )
 
 type MetricUpsert struct {
+	Val   MetricValue
 	MName string
 	Mtype MetricType
-	Val   MetricValue
 }
 
 func NewMetricUpsert(name string, val MetricValue, mtype MetricType) MetricUpsert {

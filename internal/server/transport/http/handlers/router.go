@@ -90,9 +90,9 @@ func (rt *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type routerOpts struct {
+	debugPprofPattern    string
 	checkAvailableOnPing []pingable
 	serveDebugPprof      bool
-	debugPprofPattern    string
 }
 
 type RouterOption func(opts *routerOpts)

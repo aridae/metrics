@@ -7,11 +7,11 @@ import (
 
 type flags struct {
 	AddressOverride         string
-	StoreIntervalOverride   time.Duration
 	FileStoragePathOverride string
-	RestoreOverride         bool
 	DatabaseDsnOverride     string
 	Key                     string
+	StoreIntervalOverride   time.Duration
+	RestoreOverride         bool
 }
 
 func parseFlags() flags {

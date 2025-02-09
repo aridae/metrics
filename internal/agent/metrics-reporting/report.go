@@ -3,6 +3,7 @@ package metricsreporting
 import (
 	"context"
 	"fmt"
+
 	metricsservice "github.com/aridae/go-metrics-store/internal/agent/downstreams/metrics-service"
 )
 

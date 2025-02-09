@@ -2,27 +2,26 @@ package handlers
 
 import (
 	"context"
-	"github.com/aridae/go-metrics-store/internal/server/models"
-	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers/_mock"
-	"go.uber.org/mock/gomock"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/aridae/go-metrics-store/internal/server/models"
+	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers/_mock"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_getUpdateMetricByURLPathHandler_TableTest(t *testing.T) {
 	t.Parallel()
 
 	type prereq struct {
-		httpMethod  string
-		urlEndpoint string
-		chiParams   map[string]string
-
-		expectedMetricToUpsert *models.MetricUpsert
 		mockControllerErr      error
+		chiParams              map[string]string
+		expectedMetricToUpsert *models.MetricUpsert
+		httpMethod             string
+		urlEndpoint            string
 	}
 
 	type want struct {
@@ -30,8 +29,8 @@ func Test_getUpdateMetricByURLPathHandler_TableTest(t *testing.T) {
 	}
 
 	testCases := []struct {
-		desc   string
 		prereq prereq
+		desc   string
 		want   want
 	}{
 		{

@@ -2,18 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/aridae/go-metrics-store/internal/server/repos/metric"
-	"github.com/aridae/go-metrics-store/internal/server/repos/metric/metric-inmem-repo"
-	"github.com/aridae/go-metrics-store/internal/server/repos/metric/metric-pg-repo"
-	"github.com/aridae/go-metrics-store/internal/server/transport/http/mw/gzip-mw"
-	"github.com/aridae/go-metrics-store/internal/server/transport/http/mw/logging-mw"
-	"github.com/aridae/go-metrics-store/internal/server/transport/http/mw/sha256-mw"
-	"github.com/aridae/go-metrics-store/pkg/logger"
-	nooptrm "github.com/aridae/go-metrics-store/pkg/noop-trm"
-	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
-	"github.com/avito-tech/go-transaction-manager/trm/v2"
-	"github.com/avito-tech/go-transaction-manager/trm/v2/settings"
-	"github.com/jackc/pgx/v5"
+	_ "net/http/pprof" // подключаем пакет pprof
 	"os"
 	"os/signal"
 	"syscall"
@@ -21,14 +10,24 @@ import (
 
 	"github.com/aridae/go-metrics-store/internal/server/config"
 	"github.com/aridae/go-metrics-store/internal/server/models"
+	"github.com/aridae/go-metrics-store/internal/server/repos/metric"
+	"github.com/aridae/go-metrics-store/internal/server/repos/metric/metric-inmem-repo"
+	"github.com/aridae/go-metrics-store/internal/server/repos/metric/metric-pg-repo"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers"
+	"github.com/aridae/go-metrics-store/internal/server/transport/http/mw/gzip-mw"
+	"github.com/aridae/go-metrics-store/internal/server/transport/http/mw/logging-mw"
+	"github.com/aridae/go-metrics-store/internal/server/transport/http/mw/sha256-mw"
 	"github.com/aridae/go-metrics-store/internal/server/usecases"
 	"github.com/aridae/go-metrics-store/pkg/inmem"
+	"github.com/aridae/go-metrics-store/pkg/logger"
+	nooptrm "github.com/aridae/go-metrics-store/pkg/noop-trm"
 	"github.com/aridae/go-metrics-store/pkg/postgres"
+	trmpgx "github.com/avito-tech/go-transaction-manager/drivers/pgxv5/v2"
+	"github.com/avito-tech/go-transaction-manager/trm/v2"
 	trmman "github.com/avito-tech/go-transaction-manager/trm/v2/manager"
-
-	_ "net/http/pprof" // подключаем пакет pprof
+	"github.com/avito-tech/go-transaction-manager/trm/v2/settings"
+	"github.com/jackc/pgx/v5"
 )
 
 func main() {

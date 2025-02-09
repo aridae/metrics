@@ -21,8 +21,8 @@ func SignRequestClientMiddleware(key string) ClientMiddleware {
 }
 
 type requestSignerRoundTripper struct {
-	key  string
 	next http.RoundTripper
+	key  string
 }
 
 func (rt requestSignerRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {

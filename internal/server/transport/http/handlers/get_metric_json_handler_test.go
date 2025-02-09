@@ -3,29 +3,29 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/aridae/go-metrics-store/internal/server/models"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers/_mock"
 	"github.com/aridae/go-metrics-store/pkg/pointer"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
-	"io"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 func Test_getMetricJSONHandler(t *testing.T) {
 	t.Parallel()
 
 	type prereq struct {
-		httpMethod  string
-		urlEndpoint string
-		requestBody []byte
-
+		mockControllerErr     error
 		mockExpectedMetricKey *models.MetricKey
 		mockReturnedMetric    *models.Metric
-		mockControllerErr     error
+		httpMethod            string
+		urlEndpoint           string
+		requestBody           []byte
 	}
 
 	type want struct {

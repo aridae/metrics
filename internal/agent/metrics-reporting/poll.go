@@ -3,10 +3,11 @@ package metricsreporting
 import (
 	"context"
 	"fmt"
-	gopscpu "github.com/shirou/gopsutil/cpu"
-	gopsmem "github.com/shirou/gopsutil/mem"
 	"math/rand"
 	"runtime"
+
+	gopscpu "github.com/shirou/gopsutil/cpu"
+	gopsmem "github.com/shirou/gopsutil/mem"
 )
 
 func pollRuntime(_ context.Context) metricsPack {

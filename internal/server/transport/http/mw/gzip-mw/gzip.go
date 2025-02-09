@@ -2,10 +2,11 @@ package gzipmw
 
 import (
 	"compress/gzip"
-	"github.com/aridae/go-metrics-store/pkg/logger"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/aridae/go-metrics-store/pkg/logger"
 )
 
 func GzipDecompressRequestMiddleware(next http.Handler) http.Handler {
@@ -49,10 +50,9 @@ func GzipCompressResponseMiddleware(next http.Handler) http.Handler {
 }
 
 type gzipWriter struct {
-	wroteHeader bool
-
 	http.ResponseWriter
-	compressor io.Writer
+	compressor  io.Writer
+	wroteHeader bool
 }
 
 func (gw *gzipWriter) Write(b []byte) (int, error) {

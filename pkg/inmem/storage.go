@@ -24,15 +24,13 @@ type file interface {
 }
 
 type Storage[Key comparable, Value any] struct {
-	storeMu sync.RWMutex
-	store   map[Key]Value
-
-	backupFileMu   sync.RWMutex
-	backupFile     file
-	backupInterval time.Duration
-
+	backupFile          file
+	store               map[Key]Value
 	provideFileEncoder  func(backupFile file) encoder
 	providerFileDecoder func(backupFile file) decoder
+	backupInterval      time.Duration
+	storeMu             sync.RWMutex
+	backupFileMu        sync.RWMutex
 }
 
 func New[Key comparable, Value any]() *Storage[Key, Value] {

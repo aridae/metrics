@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+
 	metricsfabrics "github.com/aridae/go-metrics-store/internal/server/models/factories"
 )
 

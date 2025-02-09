@@ -1,9 +1,10 @@
 package config
 
 import (
-	"github.com/aridae/go-metrics-store/pkg/logger"
 	"sync"
 	"time"
+
+	"github.com/aridae/go-metrics-store/pkg/logger"
 )
 
 const (
@@ -23,12 +24,12 @@ var (
 
 type Config struct {
 	Address             string
-	StoreInterval       time.Duration
 	FileStoragePath     string
-	Restore             bool
 	DatabaseDsn         string
-	DatabaseMaxOpenConn int
 	Key                 string
+	StoreInterval       time.Duration
+	DatabaseMaxOpenConn int
+	Restore             bool
 }
 
 func Obtain() *Config {

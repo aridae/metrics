@@ -3,10 +3,10 @@ package config
 import "time"
 
 type Config struct {
-	PollInterval      time.Duration
-	ReportInterval    time.Duration
 	Address           string
 	Key               string
+	PollInterval      time.Duration
+	ReportInterval    time.Duration
 	ReportersPoolSize int64
 }
 

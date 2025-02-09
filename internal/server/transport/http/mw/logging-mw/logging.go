@@ -1,9 +1,10 @@
 package loggingmw
 
 import (
-	"github.com/aridae/go-metrics-store/pkg/logger"
 	"net/http"
 	"time"
+
+	"github.com/aridae/go-metrics-store/pkg/logger"
 )
 
 func LoggingMiddleware(next http.Handler) http.Handler {
@@ -22,11 +23,10 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 }
 
 type responseTracker struct {
-	wroteHeader bool
-
 	http.ResponseWriter
-	status    int
-	sizeBytes int
+	status      int
+	sizeBytes   int
+	wroteHeader bool
 }
 
 func (o *responseTracker) Write(bytes []byte) (int, error) {

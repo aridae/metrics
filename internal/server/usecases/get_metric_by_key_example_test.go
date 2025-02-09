@@ -3,11 +3,12 @@ package usecases
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/aridae/go-metrics-store/internal/server/models"
 	metricinmemrepo "github.com/aridae/go-metrics-store/internal/server/repos/metric/metric-inmem-repo"
 	"github.com/aridae/go-metrics-store/pkg/inmem"
 	nooptrm "github.com/aridae/go-metrics-store/pkg/noop-trm"
-	"time"
 )
 
 // ExampleController_GetMetricByKey демонстрирует использование метода Controller.GetMetricByKey.

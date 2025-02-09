@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
-	"github.com/aridae/go-metrics-store/pkg/logger"
 	"io"
 	"time"
+
+	"github.com/aridae/go-metrics-store/pkg/logger"
 )
 
 // InitBackup инициализирует процесс резервного копирования хранилища.

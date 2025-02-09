@@ -2,12 +2,13 @@ package usecases
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/aridae/go-metrics-store/internal/server/models"
 	"github.com/aridae/go-metrics-store/internal/server/usecases/_mock"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
-	"testing"
-	"time"
 )
 
 func Test_upsertMetricOverride_Happy_Gauge_Float64MetricValue(t *testing.T) {

@@ -3,13 +3,14 @@ package http
 import (
 	"context"
 	"fmt"
-	"github.com/aridae/go-metrics-store/pkg/logger"
 	"net/http"
+
+	"github.com/aridae/go-metrics-store/pkg/logger"
 )
 
 type Server struct {
-	address string
 	server  *http.Server
+	address string
 }
 
 func NewServer(address string, mux http.Handler, mws ...func(http.Handler) http.Handler) *Server {
