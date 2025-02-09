@@ -7,11 +7,15 @@ import (
 	"honnef.co/go/tools/analysis/lint"
 	"honnef.co/go/tools/simple"
 	"honnef.co/go/tools/staticcheck"
+	"honnef.co/go/tools/stylecheck"
 )
 
 // staticChecks возвращает все анализаторы класса SA и выборочные анализаторы класса simple пакета staticcheck.io
 func staticChecks() []*analysis.Analyzer {
 	analyzers := make([]*analysis.Analyzer, 0, len(_securityAnalysisStaticChecks)+len(_simpleAnalysisStaticChecks))
+
+	// _allSAChecks все анализаторы класса SA пакета staticcheck.io
+	var _allSAChecks = slice.KeyBy(staticcheck.Analyzers, func(elem *lint.Analyzer) string { return elem.Analyzer.Name })
 
 	for saName := range _securityAnalysisStaticChecks {
 		lintAnalyzer, ok := _allSAChecks[saName]
@@ -22,6 +26,9 @@ func staticChecks() []*analysis.Analyzer {
 		analyzers = append(analyzers, lintAnalyzer.Analyzer)
 	}
 
+	// _allSimpleChecks все анализаторы класса gosimple пакета staticcheck.io
+	var _allSimpleChecks = slice.KeyBy(simple.Analyzers, func(elem *lint.Analyzer) string { return elem.Analyzer.Name })
+
 	for sName := range _simpleAnalysisStaticChecks {
 		lintAnalyzer, ok := _allSimpleChecks[sName]
 		if !ok {
@@ -31,14 +38,20 @@ func staticChecks() []*analysis.Analyzer {
 		analyzers = append(analyzers, lintAnalyzer.Analyzer)
 	}
 
+	// _allStyleChecks все анализаторы класса stylecheck пакета staticcheck.io
+	var _allStyleChecks = slice.KeyBy(stylecheck.Analyzers, func(elem *lint.Analyzer) string { return elem.Analyzer.Name })
+
+	for stName := range _styleAnalysisStaticChecks {
+		lintAnalyzer, ok := _allStyleChecks[stName]
+		if !ok {
+			logger.Warnf("static check stylecheck analyzer '%s' does not exist, skipping", stName)
+			continue
+		}
+		analyzers = append(analyzers, lintAnalyzer.Analyzer)
+	}
+
 	return analyzers
 }
-
-// _allSAChecks все анализаторы класса SA пакета staticcheck.io
-var _allSAChecks = slice.KeyBy(staticcheck.Analyzers, func(elem *lint.Analyzer) string { return elem.Analyzer.Name })
-
-// _allSimpleChecks все анализаторы класса gosimple пакета staticcheck.io
-var _allSimpleChecks = slice.KeyBy(simple.Analyzers, func(elem *lint.Analyzer) string { return elem.Analyzer.Name })
 
 // _securityAnalysisStaticChecks имена используемых анализаторов класса SA пакета staticcheck.io
 var _securityAnalysisStaticChecks = map[string]struct{}{
@@ -139,13 +152,63 @@ var _securityAnalysisStaticChecks = map[string]struct{}{
 	"SA9009": {},
 }
 
-// _simpleAnalysisStaticChecks имена выборочных анализаторов класса gosimple пакета staticcheck.io
+// _simpleAnalysisStaticChecks имена используемых анализаторов класса gosimple пакета staticcheck.io
 var _simpleAnalysisStaticChecks = map[string]struct{}{
 	"S1000": {},
 	"S1001": {},
+	"S1002": {},
 	"S1003": {},
+	"S1004": {},
+	"S1005": {},
+	"S1006": {},
+	"S1007": {},
+	"S1008": {},
+	"S1009": {},
 	"S1010": {},
+	"S1011": {},
 	"S1012": {},
+	"S1016": {},
+	"S1017": {},
 	"S1018": {},
 	"S1019": {},
+	"S1020": {},
+	"S1021": {},
+	"S1023": {},
+	"S1024": {},
+	"S1025": {},
+	"S1028": {},
+	"S1029": {},
+	"S1030": {},
+	"S1031": {},
+	"S1032": {},
+	"S1033": {},
+	"S1034": {},
+	"S1035": {},
+	"S1036": {},
+	"S1037": {},
+	"S1038": {},
+	"S1039": {},
+	"S1040": {},
+}
+
+// _styleAnalysisStaticChecks имена используемых анализаторов класса stylecheck пакета staticcheck.io
+var _styleAnalysisStaticChecks = map[string]struct{}{
+	"ST1000": {},
+	"ST1001": {},
+	"ST1003": {},
+	"ST1005": {},
+	"ST1006": {},
+	"ST1008": {},
+	"ST1011": {},
+	"ST1012": {},
+	"ST1013": {},
+	"ST1015": {},
+	"ST1016": {},
+	"ST1017": {},
+	"ST1018": {},
+	"ST1019": {},
+	"ST1020": {},
+	"ST1021": {},
+	"ST1022": {},
+	"ST1023": {},
 }

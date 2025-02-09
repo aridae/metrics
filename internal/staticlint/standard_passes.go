@@ -60,53 +60,53 @@ func standardPasses() []*analysis.Analyzer {
 
 // _allStandardPassesAnalyzers все стандартные статические анализаторы пакета golang.org/x/tools/go/analysis/passes
 var _allStandardPassesAnalyzers = []*analysis.Analyzer{
-	appends.Analyzer,
-	asmdecl.Analyzer,
-	assign.Analyzer,
-	atomic.Analyzer,
-	atomicalign.Analyzer,
-	bools.Analyzer,
-	buildssa.Analyzer,
-	buildtag.Analyzer,
-	cgocall.Analyzer,
-	composite.Analyzer,
-	copylock.Analyzer,
-	ctrlflow.Analyzer,
-	deepequalerrors.Analyzer,
-	defers.Analyzer,
-	directive.Analyzer,
-	errorsas.Analyzer,
-	fieldalignment.Analyzer,
-	findcall.Analyzer,
-	framepointer.Analyzer,
-	httpmux.Analyzer,
-	httpresponse.Analyzer,
-	ifaceassert.Analyzer,
-	inspect.Analyzer,
-	loopclosure.Analyzer,
-	lostcancel.Analyzer,
-	nilfunc.Analyzer,
-	nilness.Analyzer,
-	pkgfact.Analyzer,
-	printf.Analyzer,
-	reflectvaluecompare.Analyzer,
-	shadow.Analyzer,
-	shift.Analyzer,
-	sigchanyzer.Analyzer,
-	slog.Analyzer,
-	sortslice.Analyzer,
-	stdmethods.Analyzer,
-	stdversion.Analyzer,
-	stringintconv.Analyzer,
-	structtag.Analyzer,
-	testinggoroutine.Analyzer,
-	tests.Analyzer,
-	timeformat.Analyzer,
-	unmarshal.Analyzer,
-	unreachable.Analyzer,
-	unsafeptr.Analyzer,
-	unusedresult.Analyzer,
-	unusedwrite.Analyzer,
-	usesgenerics.Analyzer,
-	waitgroup.Analyzer,
+	appends.Analyzer,             // Проверка корректности использования append() для срезов
+	asmdecl.Analyzer,             // Проверка объявлений ассемблерного кода
+	assign.Analyzer,              // Проверка присваиваний значений переменным
+	atomic.Analyzer,              // Проверка использования атомарных операций
+	atomicalign.Analyzer,         // Проверка выравнивания данных для атомарных операций
+	bools.Analyzer,               // Проверка использования булевых выражений
+	buildssa.Analyzer,            // Построение SSA-формы программы
+	buildtag.Analyzer,            // Проверка использования build tags
+	cgocall.Analyzer,             // Проверка вызовов C-функций
+	composite.Analyzer,           // Проверка составных литералов
+	copylock.Analyzer,            // Проверка копирования заблокированных ресурсов
+	ctrlflow.Analyzer,            // Проверка управления потоками выполнения
+	deepequalerrors.Analyzer,     // Проверка ошибок сравнения глубоких структур
+	defers.Analyzer,              // Проверка использования defer
+	directive.Analyzer,           // Проверка директив компилятора
+	errorsas.Analyzer,            // Проверка преобразования ошибок
+	fieldalignment.Analyzer,      // Проверка выравнивания полей структуры
+	findcall.Analyzer,            // Поиск вызовов функций
+	framepointer.Analyzer,        // Проверка использования указателя кадра стека
+	httpmux.Analyzer,             // Проверка маршрутизации HTTP-запросов
+	httpresponse.Analyzer,        // Проверка обработки HTTP-ответов
+	ifaceassert.Analyzer,         // Проверка утверждений интерфейсов
+	inspect.Analyzer,             // Инспекция кода
+	loopclosure.Analyzer,         // Проверка замыканий в циклах
+	lostcancel.Analyzer,          // Проверка потери контекста отмены
+	nilfunc.Analyzer,             // Проверка использования nil-функций
+	nilness.Analyzer,             // Проверка использования nil-значений
+	pkgfact.Analyzer,             // Проверка фактов пакетов
+	printf.Analyzer,              // Проверка форматированной печати
+	reflectvaluecompare.Analyzer, // Проверка сравнений отражаемых значений
+	shadow.Analyzer,              // Проверка затенения имен переменных
+	shift.Analyzer,               // Проверка сдвигов битовых значений
+	sigchanyzer.Analyzer,         // Проверка использования каналов сигналов
+	slog.Analyzer,                // Проверка использования журналирования
+	sortslice.Analyzer,           // Проверка сортировки срезов
+	stdmethods.Analyzer,          // Проверка методов стандартного пакета
+	stdversion.Analyzer,          // Проверка совместимости с версией стандарта
+	stringintconv.Analyzer,       // Проверка преобразований строк в целые числа
+	structtag.Analyzer,           // Проверка тегов структур
+	testinggoroutine.Analyzer,    // Проверка горутин в тестах
+	tests.Analyzer,               // Проверка тестов
+	timeformat.Analyzer,          // Проверка форматирования времени
+	unmarshal.Analyzer,           // Проверка распаковки данных
+	unreachable.Analyzer,         // Проверка недостижимых участков кода
+	unsafeptr.Analyzer,           // Проверка небезопасной работы с указателями
+	unusedresult.Analyzer,        // Проверка неиспользуемых результатов функций
+	unusedwrite.Analyzer,         // Проверка неиспользуемого записи
+	usesgenerics.Analyzer,        // Проверка использования обобщений
+	waitgroup.Analyzer,           // Проверка использования wait groups
 }

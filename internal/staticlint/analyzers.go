@@ -12,7 +12,7 @@ func Analyzers() []*analysis.Analyzer {
 
 	allAnalyzers := make([]*analysis.Analyzer, 0, len(standardPassesAnalyzers)+len(staticChecksAnalyzers)+2)
 
-	// все анализаторы класса SA и выборочные анализаторы класса ST пакета staticcheck.io
+	// анализаторы класса SA, gosimple и stylecheck пакета staticcheck.io
 	allAnalyzers = append(allAnalyzers, staticChecksAnalyzers...)
 
 	// все стандартные статические анализаторы пакета golang.org/x/tools/go/analysis/passes
