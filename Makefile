@@ -42,25 +42,30 @@ test-coverage:
 	go test ./... -coverpkg=./... -coverprofile=${COVERAGE_OUT_FILE} -vet=all
 	go tool cover -func=${COVERAGE_OUT_FILE}
 
+# usage: make pprof-http pprof-port=9091 app-port=8081 profile=heap seconds=30
+.PHONY: pprof-http
+pprof-http:
+	go tool pprof -http=":${pprof-port}" -seconds=${seconds} http://127.0.0.1:${app-port}/debug/pprof/${profile}
+
+# usage: make pprof app-port=8081 profile=heap seconds=30
+.PHONY: pprof-cli
+pprof-cli:
+	go tool pprof -seconds=${seconds} http://127.0.0.1:${app-port}/debug/pprof/${profile}
+
+# usage: make pprof-text app-port=8081 profile=heap seconds=30 output=base.pprof
+.PHONY: pprof-text
+pprof-text:
+	go tool pprof --text -seconds=${seconds} http://127.0.0.1:${app-port}/debug/pprof/${profile} > ${output}
+
+
+# usage: make bench out=filename.txt
 .PHONY: bench
 bench:
 	go test ./... -bench=./... -benchmem > ${out}
 
-.PHONY: benchcmp
-benchcmp:
-	benchcmp ${old} ${new}
-
-.PHONY: autotest_14
-autotest_14: export METRICSTEST := ${LOCALBIN}/metricstest
-autotest_14: export AGENTBIN := ${LOCALBIN}/agent
-autotest_14: export SERVERBIN := ${LOCALBIN}/server
-autotest_14: build-agent build-server
-	PATH=${PATH}:${LOCALBIN} ${METRICSTEST} -test.v \
-	-test.run=^TestIteration14$$ \
-	-agent-binary-path=${AGENTBIN} \
-	-binary-path=${SERVERBIN} \
-	-server-port=8080 \
-	-source-path=. \
-	-file-storage-path=/tmp/metrics-tests-db.json \
-	-database-dsn=postgresql://metrics-store-user:metrics-store-pass@localhost:5432/metrics-store \
-	-key=123
+# usage: make benchstat old=old.txt new=new.txt
+.PHONY: benchstat
+benchstat: export BENCHSTATBIN := ${LOCALBIN}/benchstat
+benchstat:
+	test -f ${BENCHSTATBIN} || GOBIN=${LOCALBIN} go install golang.org/x/perf/cmd/benchstat@latest
+	PATH=${PATH}:${LOCALBIN} ${BENCHSTATBIN} ${old} ${new}
