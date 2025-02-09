@@ -30,6 +30,12 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+var (
+	buildVersion = "N/A"
+	buildDate    = "N/A"
+	buildCommit  = "N/A"
+)
+
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
@@ -44,6 +50,8 @@ func main() {
 		// will be retained in memory indefinitely (until the program shuts down), causing a memory leak.
 		cancel()
 	}()
+
+	logger.Infof("Starting Server app with build flags:\n\nBuild version: %s\nBuild date: %s\nBuild commit: %s\n", buildVersion, buildDate, buildCommit)
 
 	cnf := config.Obtain()
 
