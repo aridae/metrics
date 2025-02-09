@@ -1,3 +1,5 @@
+// Package nomainosexit содержит анализатор кода, который запрещает использование прямого вызова os.Exit()
+// внутри функции main() в пакете main.
 package nomainosexit
 
 import (
@@ -58,6 +60,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	return nil, nil
 }
 
+// isPackageMethodCall проверяет, является ли выражение вызовом метода определенного пакета с указанным именем.
 func isPackageMethodCall(callExpr *ast.CallExpr, pkg, name string) bool {
 	funcExpr := callExpr.Fun
 
@@ -74,6 +77,7 @@ func isPackageMethodCall(callExpr *ast.CallExpr, pkg, name string) bool {
 		isIdent(methodIdent, name) // check
 }
 
+// isIdent проверяет, является ли выражение идентификатором с заданным именем.
 func isIdent(expr ast.Expr, ident string) bool {
 	id, ok := expr.(*ast.Ident)
 	return ok && id.Name == ident
