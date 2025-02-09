@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/aridae/go-metrics-store/internal/server/models"
 	metricrepo "github.com/aridae/go-metrics-store/internal/server/repos/metric"
+	"sort"
 )
 
 type inmemoryStorage[Key comparable, Value any] interface {
@@ -40,9 +41,11 @@ func (r *repo) GetByKey(ctx context.Context, key models.MetricKey) (*models.Metr
 }
 
 func (r *repo) GetAll(ctx context.Context) ([]models.Metric, error) {
-	rawMetrics := r.store.GetAll(ctx)
+	metrics := r.store.GetAll(ctx)
 
-	metrics := make([]models.Metric, 0, len(rawMetrics))
+	sort.Slice(metrics, func(i, j int) bool {
+		return metrics[i].GetKey() < metrics[j].GetKey()
+	})
 
 	return metrics, nil
 }
