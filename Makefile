@@ -75,3 +75,14 @@ fieldalignment-fix: export FIELDALIGNMENTBIN := ${LOCALBIN}/fieldalignment
 fieldalignment-fix:
 	test -f ${FIELDALIGNMENTBIN} || GOBIN=${LOCALBIN} go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest
 	PATH=${PATH}:${LOCALBIN} ${FIELDALIGNMENTBIN} --fix ./...
+
+export STATICLINTBIN := ${LOCALBIN}/staticlint
+
+.PHONY: build-staticlint
+build-staticlint:
+	go build -o ${STATICLINTBIN} cmd/staticlint/main.go
+
+# usage: make staticlint pattern=./...
+.PHONY: staticlint
+staticlint: build-staticlint
+	PATH=${PATH}:${LOCALBIN} ${STATICLINTBIN} ${pattern}

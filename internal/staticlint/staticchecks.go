@@ -193,7 +193,7 @@ var _simpleAnalysisStaticChecks = map[string]struct{}{
 
 // _styleAnalysisStaticChecks имена используемых анализаторов класса stylecheck пакета staticcheck.io
 var _styleAnalysisStaticChecks = map[string]struct{}{
-	"ST1000": {},
+	//"ST1000": {}, at least one file in a package should have a package comment
 	"ST1001": {},
 	"ST1003": {},
 	"ST1005": {},
