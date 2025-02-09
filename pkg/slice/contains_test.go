@@ -7,10 +7,10 @@ import (
 
 func TestContains(t *testing.T) {
 	testCases := []struct {
-		name     string        // Название теста
-		slice    []interface{} // Входной срез
-		target   interface{}   // Целевой элемент
-		expected bool          // Ожидаемый результат
+		target   interface{}
+		name     string
+		slice    []interface{}
+		expected bool
 	}{
 		{
 			name:     "IntSliceFound",

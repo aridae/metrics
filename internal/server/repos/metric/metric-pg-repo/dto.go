@@ -9,11 +9,11 @@ import (
 )
 
 type metricDTO struct {
-	ID       int64     `db:"id"`
+	Datetime time.Time `db:"datetime"`
 	Name     string    `db:"name"`
 	MType    string    `db:"type"`
 	Value    string    `db:"value"`
-	Datetime time.Time `db:"datetime"`
+	ID       int64     `db:"id"`
 }
 
 func parseDTOs(dtos []metricDTO) ([]models.Metric, error) {

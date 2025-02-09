@@ -23,12 +23,12 @@ var (
 
 type Config struct {
 	Address             string
-	StoreInterval       time.Duration
 	FileStoragePath     string
-	Restore             bool
 	DatabaseDsn         string
-	DatabaseMaxOpenConn int
 	Key                 string
+	StoreInterval       time.Duration
+	DatabaseMaxOpenConn int
+	Restore             bool
 }
 
 func Obtain() *Config {

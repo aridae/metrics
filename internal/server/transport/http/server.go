@@ -8,8 +8,8 @@ import (
 )
 
 type Server struct {
-	address string
 	server  *http.Server
+	address string
 }
 
 func NewServer(address string, mux http.Handler, mws ...func(http.Handler) http.Handler) *Server {

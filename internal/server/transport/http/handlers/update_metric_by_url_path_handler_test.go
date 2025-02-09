@@ -17,12 +17,11 @@ func Test_getUpdateMetricByURLPathHandler_TableTest(t *testing.T) {
 	t.Parallel()
 
 	type prereq struct {
-		httpMethod  string
-		urlEndpoint string
-		chiParams   map[string]string
-
-		expectedMetricToUpsert *models.MetricUpsert
 		mockControllerErr      error
+		chiParams              map[string]string
+		expectedMetricToUpsert *models.MetricUpsert
+		httpMethod             string
+		urlEndpoint            string
 	}
 
 	type want struct {
@@ -30,8 +29,8 @@ func Test_getUpdateMetricByURLPathHandler_TableTest(t *testing.T) {
 	}
 
 	testCases := []struct {
-		desc   string
 		prereq prereq
+		desc   string
 		want   want
 	}{
 		{

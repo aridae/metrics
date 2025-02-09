@@ -14,9 +14,9 @@ const (
 )
 
 type MetricUpsert struct {
+	Val   MetricValue
 	MName string
 	Mtype MetricType
-	Val   MetricValue
 }
 
 func NewMetricUpsert(name string, val MetricValue, mtype MetricType) MetricUpsert {
@@ -56,8 +56,8 @@ func (s MetricUpsert) WithDatetime(now time.Time) Metric {
 }
 
 type Metric struct {
-	MetricUpsert
 	Datetime time.Time
+	MetricUpsert
 }
 
 func (s Metric) GetDatetime() time.Time {

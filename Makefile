@@ -69,3 +69,9 @@ benchstat: export BENCHSTATBIN := ${LOCALBIN}/benchstat
 benchstat:
 	test -f ${BENCHSTATBIN} || GOBIN=${LOCALBIN} go install golang.org/x/perf/cmd/benchstat@latest
 	PATH=${PATH}:${LOCALBIN} ${BENCHSTATBIN} ${old} ${new}
+
+.PHONY: fieldalignment-fix
+fieldalignment-fix: export FIELDALIGNMENTBIN := ${LOCALBIN}/fieldalignment
+fieldalignment-fix:
+	test -f ${FIELDALIGNMENTBIN} || GOBIN=${LOCALBIN} go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest
+	PATH=${PATH}:${LOCALBIN} ${FIELDALIGNMENTBIN} --fix ./...

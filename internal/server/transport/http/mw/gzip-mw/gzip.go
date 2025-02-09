@@ -49,10 +49,9 @@ func GzipCompressResponseMiddleware(next http.Handler) http.Handler {
 }
 
 type gzipWriter struct {
-	wroteHeader bool
-
 	http.ResponseWriter
-	compressor io.Writer
+	compressor  io.Writer
+	wroteHeader bool
 }
 
 func (gw *gzipWriter) Write(b []byte) (int, error) {

@@ -18,13 +18,12 @@ func Test_updateMetricsBatchJSONHandler(t *testing.T) {
 	t.Parallel()
 
 	type prereq struct {
-		httpMethod  string
-		urlEndpoint string
-		requestBody []byte
-
+		mockControllerErr          error
+		httpMethod                 string
+		urlEndpoint                string
+		requestBody                []byte
 		mockExpectedMetricsUpserts []models.MetricUpsert
 		mockReturnedMetrics        []models.Metric
-		mockControllerErr          error
 	}
 
 	type want struct {

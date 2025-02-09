@@ -10,11 +10,11 @@ func TestMapBatch(t *testing.T) {
 	type mapperFunc[In any, Out any] func(In) (Out, error)
 
 	var testCases = []struct {
-		name        string // Имя теста
-		input       []int  // Входной срез
+		expectedErr error
 		mapperFunc  mapperFunc[int, int]
-		expected    []int // Ожидаемый результат
-		expectedErr error // Ожидаемая ошибка
+		name        string
+		input       []int
+		expected    []int
 	}{
 		{
 			name:        "SuccessAllElementsMapped",
