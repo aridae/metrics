@@ -109,7 +109,7 @@ func main() {
 		serverMiddlewares = append(serverMiddlewares, rsamw.DecryptRequestMiddleware(privateKey))
 	}
 
-	httpServer := serverhttp.NewServer(cnf.Address, httpRouter)
+	httpServer := serverhttp.NewServer(cnf.Address, httpRouter, serverMiddlewares...)
 
 	if err := httpServer.Run(ctx); err != nil {
 		logger.Fatalf("failed to start server: %v", err)
