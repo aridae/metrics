@@ -20,6 +20,7 @@ type Config struct {
 	Key                  string `short:"k" description:"Ключ для подписания запросов SHA256 подписью" env:"KEY"`
 	StoreIntervalSeconds int    `short:"i" description:"Backup store interval" env:"STORE_INTERVAL" yaml:"store_interval"`
 	Restore              bool   `short:"r" description:"Restore from backup file on start" env:"RESTORE" yaml:"restore"`
+	CryptoKey            string `long:"crypto-key" description:"путь до файла с приватным ключом" env:"CRYPTO_KEY"`
 	DatabaseMaxOpenConn  int
 }
 

@@ -8,6 +8,7 @@ type Config struct {
 	PollIntervalSeconds   int64  `short:"p" description:"частота опроса метрик из пакета runtime" env:"POLL_INTERVAL"`
 	ReportIntervalSeconds int64  `short:"r" description:"частота отправки метрик на сервер" env:"REPORT_INTERVAL"`
 	ReportersPoolSize     int64  `short:"l" description:"количество одновременно исходящих запросов на сервер" env:"RATE_LIMIT"`
+	CryptoKey             string `long:"crypto-key" description:"путь до файла с публичным ключом" env:"CRYPTO_KEY"`
 }
 
 var (

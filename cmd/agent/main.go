@@ -2,6 +2,10 @@ package main
 
 import (
 	"context"
+	"crypto/rsa"
+	rsamw "github.com/aridae/go-metrics-store/internal/server/transport/http/mw/rsa-mw"
+	rsacrypto "github.com/aridae/go-metrics-store/pkg/rsa-crypto"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -39,9 +43,17 @@ func main() {
 
 	logger.Infof("Starting Agent app with build flags:\n\nBuild version: %s\nBuild date: %s\nBuild commit: %s\n", buildVersion, buildDate, buildCommit)
 
-	metricsServiceClient := metricsservice.NewClient(cnf.Address,
+	clientMiddlewares := []func(http.RoundTripper) http.RoundTripper{
 		sha256mw.SignRequestClientMiddleware(cnf.Key),
-	)
+	}
+
+	if cnf.CryptoKey != "" {
+		pubKey := mustParsePublicKey(cnf.CryptoKey)
+		clientMiddlewares = append(clientMiddlewares, rsamw.EncryptRequestClientMiddleware(pubKey))
+	}
+
+	metricsServiceClient := metricsservice.NewClient(cnf.Address, clientMiddlewares...)
+
 	metricsAgent := metricsreporting.NewAgent(
 		metricsServiceClient,
 		time.Second*time.Duration(cnf.PollIntervalSeconds),
@@ -50,4 +62,13 @@ func main() {
 	)
 
 	metricsAgent.Run(ctx)
+}
+
+func mustParsePublicKey(path string) *rsa.PublicKey {
+	pubKey, err := rsacrypto.FromFile(path, rsacrypto.ParsePublicKey)
+	if err != nil {
+		logger.Fatalf("failed to load public key: %v", err)
+	}
+
+	return pubKey
 }
