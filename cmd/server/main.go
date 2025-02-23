@@ -51,9 +51,9 @@ func main() {
 		cancel()
 	}()
 
-	logger.Infof("Starting Server app with build flags:\n\nBuild version: %s\nBuild date: %s\nBuild commit: %s\n", buildVersion, buildDate, buildCommit)
-
 	cnf := config.Obtain()
+
+	logger.Infof("Starting Server app with build flags:\n\nBuild version: %s\nBuild date: %s\nBuild commit: %s\n", buildVersion, buildDate, buildCommit)
 
 	var txManager trm.Manager
 	var metricRepo metric.Repository
@@ -114,7 +114,7 @@ func mustInitMetricsInmemStore(ctx context.Context, cnf *config.Config) *inmem.S
 		logger.Fatalf("failed to open file for backup %s: %v", backupFilepath, err)
 	}
 
-	err = memStore.InitBackup(ctx, backupFile, cnf.StoreInterval, map[string]any{
+	err = memStore.InitBackup(ctx, backupFile, time.Duration(cnf.StoreIntervalSeconds)*time.Second, map[string]any{
 		"Metric":             models.Metric{},
 		"Int64MetricValue":   models.NewInt64MetricValue(0),
 		"Float64MetricValue": models.NewFloat64MetricValue(0),

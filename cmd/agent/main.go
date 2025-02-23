@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/aridae/go-metrics-store/internal/agent/config"
 	metricsservice "github.com/aridae/go-metrics-store/internal/agent/downstreams/metrics-service"
@@ -34,14 +35,19 @@ func main() {
 		cancel()
 	}()
 
-	logger.Infof("Starting Agent app with build flags:\n\nBuild version: %s\nBuild date: %s\nBuild commit: %s\n", buildVersion, buildDate, buildCommit)
+	cnf := config.Obtain()
 
-	cnf := config.Init()
+	logger.Infof("Starting Agent app with build flags:\n\nBuild version: %s\nBuild date: %s\nBuild commit: %s\n", buildVersion, buildDate, buildCommit)
 
 	metricsServiceClient := metricsservice.NewClient(cnf.Address,
 		sha256mw.SignRequestClientMiddleware(cnf.Key),
 	)
-	metricsAgent := metricsreporting.NewAgent(metricsServiceClient, cnf.PollInterval, cnf.ReportInterval, cnf.ReportersPoolSize)
+	metricsAgent := metricsreporting.NewAgent(
+		metricsServiceClient,
+		time.Second*time.Duration(cnf.PollIntervalSeconds),
+		time.Second*time.Duration(cnf.ReportIntervalSeconds),
+		cnf.ReportersPoolSize,
+	)
 
 	metricsAgent.Run(ctx)
 }
