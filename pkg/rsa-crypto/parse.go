@@ -23,7 +23,7 @@ func ParsePublicKey(publicKeyData []byte) (*rsa.PublicKey, error) {
 
 	rsaPubKey, ok := pubKey.(*rsa.PublicKey)
 	if !ok {
-		return nil, errors.New("unsupported type of public key")
+		return nil, fmt.Errorf("unsupported type of public key: %T", pubKey)
 	}
 
 	return rsaPubKey, nil
@@ -35,12 +35,17 @@ func ParsePrivateKey(privateKeyData []byte) (*rsa.PrivateKey, error) {
 		return nil, errors.New("no PEM block found")
 	}
 
-	privateKey, err := x509.ParsePKCS1PrivateKey(pemBlock.Bytes)
+	privateKey, err := x509.ParsePKCS8PrivateKey(pemBlock.Bytes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse DER encoded public key: %w", err)
 	}
 
-	return privateKey, nil
+	rsaPrivateKey, ok := privateKey.(*rsa.PrivateKey)
+	if !ok {
+		return nil, fmt.Errorf("unsupported type of private key: %T", privateKey)
+	}
+
+	return rsaPrivateKey, nil
 }
 
 func FromFile[Key rsa.PrivateKey | rsa.PublicKey](path string, parseFn func([]byte) (*Key, error)) (*Key, error) {
