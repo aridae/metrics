@@ -10,6 +10,36 @@ import (
 	"os"
 )
 
+// ParsePublicKey парсит PEM-кодированный публичный ключ RSA.
+//
+// Функция принимает массив байтов, представляющий PEM-кодированный публичный ключ,
+// и пытается распарсить его в структуру rsa.PublicKey.
+//
+// Если входные данные не содержат корректного PEM-блока или если не удается распознать
+// публичный ключ как ключ RSA, возвращается ошибка.
+//
+// Пример использования:
+//
+//	publicKeyPEM := []byte(`-----BEGIN PUBLIC KEY-----
+//	MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCfT9kBoLavP0bKDOOZxPjJFOaU
+//	3E1hOvm15ATCG6Q+nFjbBz2GG2pOKPLY3TVC2UW9XfthdS5oD8UDLzVOr37RrbkR
+//	FIl1y5WcZZPPiCJmlE3XRe6g9WK2T6xtfCeOS3gkv1/HY6GLG/bhBzrV1Q2k7pbVU
+//	G+vSHFYZEnSQIDAQAB
+//	-----END PUBLIC KEY-----`)
+//	pubKey, err := ParsePublicKey(publicKeyPEM)
+//	if err != nil {
+//		log.Fatalf("не удалось распарсить публичный ключ: %v", err)
+//	}
+//	fmt.Println("успешно распарсирован публичный ключ:", pubKey.N.String())
+//
+// Параметры:
+//
+//	publicKeyData []byte — массив байтов, содержащий PEM-кодированный публичный ключ.
+//
+// Возвращаемые значения:
+//
+//	*rsa.PublicKey — успешно распарсенный публичный ключ RSA.
+//	error — ошибка, если произошла ошибка при парсинге.
 func ParsePublicKey(publicKeyData []byte) (*rsa.PublicKey, error) {
 	pemBlock, _ := pem.Decode(publicKeyData)
 	if pemBlock == nil {
@@ -29,6 +59,35 @@ func ParsePublicKey(publicKeyData []byte) (*rsa.PublicKey, error) {
 	return rsaPubKey, nil
 }
 
+// ParsePrivateKey парсит PEM-кодированный приватный ключ RSA.
+//
+// Функция принимает массив байтов, представляющий PEM-кодированный приватный ключ,
+// и пытается распарсить его в структуру rsa.PrivateKey.
+//
+// Если входные данные не содержат корректного PEM-блока или если не удается распознать
+// приватный ключ как ключ RSA, возвращается ошибка.
+//
+// Пример использования:
+//
+//	privateKeyPEM := []byte(`-----BEGIN PRIVATE KEY-----
+//	MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgSRL6DsfzYAxuEg7N
+//	jUdu3ikO4wXjltWl/Nh8HCwe1JhRANCAARLHtrZVdJ9q4AKshwKnbsxBVKc/rUBp
+//	LJbVMCRCh3InqTMy2IJvxIY5lgWbbi27DDkPl1cKZr3udL4eqBZRRW
+//	-----END PRIVATE KEY-----`)
+//	privateKey, err := ParsePrivateKey(privateKeyPEM)
+//	if err != nil {
+//		log.Fatalf("не удалось распарсить приватный ключ: %v", err)
+//	}
+//	fmt.Println("успешно распарсирован приватный ключ:", privateKey.D.Int.Text(16))
+//
+// Параметры:
+//
+//	privateKeyData []byte — массив байтов, содержащий PEM-кодированный приватный ключ.
+//
+// Возвращаемые значения:
+//
+//	*rsa.PrivateKey — успешно распарсированный приватный ключ RSA.
+//	error — ошибка, если произошла ошибка при парсинге.
 func ParsePrivateKey(privateKeyData []byte) (*rsa.PrivateKey, error) {
 	pemBlock, _ := pem.Decode(privateKeyData)
 	if pemBlock == nil {
@@ -48,6 +107,38 @@ func ParsePrivateKey(privateKeyData []byte) (*rsa.PrivateKey, error) {
 	return rsaPrivateKey, nil
 }
 
+// FromFile загружает RSA-ключ (приватный или публичный) из файла.
+//
+// Функция принимает путь к файлу и функцию для парсинга байтового представления ключа.
+// Если файл не найден или не удается прочитать его содержимое, возвращается ошибка.
+// Если функция парсинга завершится неудачей, также возвращается ошибка.
+//
+// Пример использования:
+//
+//	pathToPublicKey := "/path/to/public_key.pem"
+//	publicKey, err := FromFile[pathToPublicKey, ParsePublicKey]
+//	if err != nil {
+//		log.Fatalf("failed to load public key from file: %v", err)
+//	}
+//	fmt.Println("successfully loaded public key:", publicKey.N.String())
+//
+// pathToPrivateKey := "/path/to/private_key.pem"
+//
+//	privateKey, err := FromFile[pathToPrivateKey, ParsePrivateKey]
+//	if err != nil {
+//		log.Fatalf("failed to load private key from file: %v", err)
+//	}
+//	fmt.Println("successfully loaded private key:", privateKey.D.Int.Text(16))
+//
+// Параметры:
+//
+//	path string — путь к файлу, содержащему ключ.
+//	parseFn func([]byte) (*Key, error) — функция для парсинга байтового представления ключа.
+//
+// Возвращаемые значения:
+//
+//	*Key — успешно загруженный ключ.
+//	error — ошибка, если возникла проблема при загрузке или парсинге ключа.
 func FromFile[Key rsa.PrivateKey | rsa.PublicKey](path string, parseFn func([]byte) (*Key, error)) (*Key, error) {
 	keyFile, err := os.Open(path)
 	if err != nil {
