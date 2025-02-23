@@ -27,6 +27,7 @@ vendor/
 /static/data/
 .data
 /internal/server/repos/scalar-metric/postgres-driven/
+.certs/
 
 postgres-compose.yaml
 .DS_Store
