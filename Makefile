@@ -22,15 +22,23 @@ lint:
 fmt:
 	go fmt ./...
 
+GOOS=darwin
+GOARCH=amd64
+
+VERSION = v0.0.1
+COMMIT = $(shell git rev-parse HEAD)
+DATE = $(shell date "+%Y-%m-%d")
+LDFLAGS = -X main.buildVersion=$(VERSION) -X main.buildDate=$(DATE) -X main.buildCommit=$(COMMIT)
+
 .PHONY: build-server
 build-server: export SERVERBIN := ${LOCALBIN}/server
 build-server:
-	go build -o ${SERVERBIN} cmd/server/main.go
+	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o ${SERVERBIN} -ldflags "$(LDFLAGS)" cmd/server/main.go
 
 .PHONY: build-agent
 build-agent: export AGENTBIN := ${LOCALBIN}/agent
 build-agent:
-	go build -o ${AGENTBIN} cmd/agent/main.go
+	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o ${AGENTBIN} -ldflags "$(LDFLAGS)" cmd/agent/main.go
 
 .PHONY: test
 test:
@@ -69,3 +77,20 @@ benchstat: export BENCHSTATBIN := ${LOCALBIN}/benchstat
 benchstat:
 	test -f ${BENCHSTATBIN} || GOBIN=${LOCALBIN} go install golang.org/x/perf/cmd/benchstat@latest
 	PATH=${PATH}:${LOCALBIN} ${BENCHSTATBIN} ${old} ${new}
+
+.PHONY: fieldalignment-fix
+fieldalignment-fix: export FIELDALIGNMENTBIN := ${LOCALBIN}/fieldalignment
+fieldalignment-fix:
+	test -f ${FIELDALIGNMENTBIN} || GOBIN=${LOCALBIN} go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest
+	PATH=${PATH}:${LOCALBIN} ${FIELDALIGNMENTBIN} --fix ./...
+
+export STATICLINTBIN = ${LOCALBIN}/staticlint
+
+.PHONY: build-staticlint
+build-staticlint:
+	go build -o ${STATICLINTBIN} cmd/staticlint/main.go
+
+# usage: make staticlint pattern=./...
+.PHONY: staticlint
+staticlint: build-staticlint
+	PATH=${PATH}:${LOCALBIN} ${STATICLINTBIN} ${pattern}

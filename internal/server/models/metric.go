@@ -56,8 +56,8 @@ func (s MetricUpsert) WithDatetime(now time.Time) Metric {
 }
 
 type Metric struct {
-	MetricUpsert
 	Datetime time.Time
+	MetricUpsert
 }
 
 func (s Metric) GetDatetime() time.Time {
