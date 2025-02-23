@@ -94,39 +94,3 @@ build-staticlint:
 .PHONY: staticlint
 staticlint: build-staticlint
 	PATH=${PATH}:${LOCALBIN} ${STATICLINTBIN} ${pattern}
-
-.PHONY: autotest_14
-autotest_14: export METRICSTEST := ${LOCALBIN}/metricstest
-autotest_14: export AGENTBIN := ${LOCALBIN}/agent
-autotest_14: export SERVERBIN := ${LOCALBIN}/server
-autotest_14: build-agent build-server
-	PATH=${PATH}:${LOCALBIN} ${METRICSTEST} -test.v \
-	-test.run=^TestIteration14$$ \
-	-agent-binary-path=${AGENTBIN} \
-	-binary-path=${SERVERBIN} \
-	-server-port=8080 \
-	-source-path=. \
-	-file-storage-path=/tmp/metrics-tests-db.json \
-	-database-dsn=postgresql://metrics-store-user:metrics-store-pass@localhost:5432/metrics-store \
-	-key=123
-
-.PHONY: autotest
-autotest: export METRICSTEST := ${LOCALBIN}/metricstest
-autotest: export AGENTBIN := ${LOCALBIN}/agent
-autotest: export SERVERBIN := ${LOCALBIN}/server
-#ifeq ($(shell test $(iter) -gt 9; echo $$?),0)
-# $(eval t := $$$(iter))
-# r := $(subst $(iter),,$(t))
-# reg='([1-9]|1[0-$(r)])[A-B]*'
-#else
-# reg=[1-$(iter)][A-B]*
-#endif
-autotest: build-agent build-server
-	PATH=${PATH}:${LOCALBIN} ${METRICSTEST} -test.v \
-	-test.run=TestIteration13 \
-	-agent-binary-path=${AGENTBIN} \
-	-binary-path=${SERVERBIN} \
-	-server-port=8080 \
-	-source-path=. \
-	-file-storage-path=/tmp/metrics-tests-db.json \
-	-database-dsn=postgresql://metrics-store-user:metrics-store-pass@localhost:5432/metrics-store
