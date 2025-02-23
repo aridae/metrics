@@ -6,7 +6,7 @@ import (
 )
 
 func mustParseFlags(cnf *Config) {
-	_, err := goflags.Parse(cnf)
+	_, err := goflags.NewParser(cnf, goflags.AllowBoolValues).Parse()
 	if err != nil {
 		logger.Fatalf("error parsing command line flags: %v", err)
 	}
