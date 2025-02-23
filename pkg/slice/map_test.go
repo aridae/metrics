@@ -60,3 +60,16 @@ func TestMapBatch(t *testing.T) {
 		})
 	}
 }
+
+// BenchmarkMapBatch измеряет производительность функции MapBatch.
+func BenchmarkMapBatch(b *testing.B) {
+	inputs := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	mapperFn := func(x int) (int, error) {
+		return x * 2, nil
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_, _ = MapBatch(inputs, mapperFn)
+	}
+}

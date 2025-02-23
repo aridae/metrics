@@ -34,3 +34,14 @@ func TestKeyBy(t *testing.T) {
 		t.Errorf("Expected: %v, but got: %v", expected, actual)
 	}
 }
+
+// BenchmarkKeyBy измеряет производительность функции KeyBy.
+func BenchmarkKeyBy(b *testing.B) {
+	slice := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	fn := func(x int) int { return x * 2 }
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		KeyBy(slice, fn)
+	}
+}
