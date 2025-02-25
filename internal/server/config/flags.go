@@ -6,6 +6,7 @@ import (
 )
 
 type flags struct {
+	CryptoKey               string
 	AddressOverride         string
 	FileStoragePathOverride string
 	DatabaseDsnOverride     string
@@ -29,6 +30,8 @@ func parseFlags() flags {
 	flag.StringVar(&flgs.DatabaseDsnOverride, "d", "", "Database DSN")
 
 	flag.StringVar(&flgs.Key, "k", "", "ключ для подписания запросов SHA256 подписью")
+
+	flag.StringVar(&flgs.CryptoKey, "crypto-key", "", "путь до файла с приватным ключом")
 
 	flag.Parse()
 

@@ -3,19 +3,17 @@ package main
 import (
 	"context"
 	"crypto/rsa"
+	"github.com/aridae/go-metrics-store/internal/agent/config"
+	metricsservice "github.com/aridae/go-metrics-store/internal/agent/downstreams/metrics-service"
+	metricsreporting "github.com/aridae/go-metrics-store/internal/agent/metrics-reporting"
 	rsamw "github.com/aridae/go-metrics-store/internal/server/transport/http/mw/rsa-mw"
+	"github.com/aridae/go-metrics-store/internal/server/transport/http/mw/sha256-mw"
+	"github.com/aridae/go-metrics-store/pkg/logger"
 	rsacrypto "github.com/aridae/go-metrics-store/pkg/rsa-crypto"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
-
-	"github.com/aridae/go-metrics-store/internal/agent/config"
-	metricsservice "github.com/aridae/go-metrics-store/internal/agent/downstreams/metrics-service"
-	metricsreporting "github.com/aridae/go-metrics-store/internal/agent/metrics-reporting"
-	"github.com/aridae/go-metrics-store/internal/server/transport/http/mw/sha256-mw"
-	"github.com/aridae/go-metrics-store/pkg/logger"
 )
 
 var (
@@ -56,8 +54,8 @@ func main() {
 
 	metricsAgent := metricsreporting.NewAgent(
 		metricsServiceClient,
-		time.Second*time.Duration(cnf.PollIntervalSeconds),
-		time.Second*time.Duration(cnf.ReportIntervalSeconds),
+		cnf.PollInterval,
+		cnf.ReportInterval,
 		cnf.ReportersPoolSize,
 	)
 

@@ -23,6 +23,7 @@ var (
 )
 
 type Config struct {
+	CryptoKey           string
 	Address             string
 	FileStoragePath     string
 	DatabaseDsn         string

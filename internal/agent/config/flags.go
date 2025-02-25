@@ -18,5 +18,7 @@ func parseFlags(cnf *Config) {
 
 	flag.Int64Var(&cnf.ReportersPoolSize, "l", defaultConfig.ReportersPoolSize, "количество одновременно исходящих запросов на сервер")
 
+	flag.StringVar(&cnf.CryptoKey, "crypto-key", defaultConfig.CryptoKey, "путь до файла с публичным ключом")
+
 	flag.Parse()
 }
