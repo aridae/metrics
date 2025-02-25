@@ -1,13 +1,43 @@
 package config
 
 import (
-	"github.com/aridae/go-metrics-store/pkg/logger"
-	goflags "github.com/jessevdk/go-flags"
+	"flag"
+	"time"
 )
 
-func mustParseFlags(cnf *Config) {
-	_, err := goflags.NewParser(cnf, goflags.AllowBoolValues).Parse()
-	if err != nil {
-		logger.Fatalf("error parsing command line flags: %v", err)
-	}
+type flags struct {
+	AddressOverride         string
+	FileStoragePathOverride string
+	DatabaseDsnOverride     string
+	Key                     string
+	StoreIntervalOverride   time.Duration
+	RestoreOverride         bool
+}
+
+func parseFlags() flags {
+	flgs := flags{}
+
+	flag.StringVar(&flgs.AddressOverride, "a", addressDefaultVal, "Address of server")
+
+	storeInterval := flag.Int64("i", int64(storeIntervalDefault.Seconds()), "Backup store interval")
+	flgs.StoreIntervalOverride = time.Duration(*storeInterval) * time.Second
+
+	flag.StringVar(&flgs.FileStoragePathOverride, "f", fileStoragePathDefault, "Backup file path")
+
+	flag.BoolVar(&flgs.RestoreOverride, "r", restoreDefault, "Restore from backup file on start")
+
+	flag.StringVar(&flgs.DatabaseDsnOverride, "d", "", "Database DSN")
+
+	flag.StringVar(&flgs.Key, "k", "", "ключ для подписания запросов SHA256 подписью")
+
+	flag.Parse()
+
+	return flgs
+}
+
+func (f flags) override(cfg *Config) {
+	cfg.overrideAddressIfNotDefault(f.AddressOverride, "flags")
+	cfg.overrideStoreIntervalIfNotDefault(f.StoreIntervalOverride, "flags")
+	cfg.overrideFileStoragePathIfNotDefault(f.FileStoragePathOverride, "flags")
+	cfg.overrideRestoreIfNotDefault(f.RestoreOverride, "flags")
 }

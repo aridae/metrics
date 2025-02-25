@@ -114,7 +114,7 @@ func mustInitMetricsInmemStore(ctx context.Context, cnf *config.Config) *inmem.S
 		logger.Fatalf("failed to open file for backup %s: %v", backupFilepath, err)
 	}
 
-	err = memStore.InitBackup(ctx, backupFile, time.Duration(cnf.StoreIntervalSeconds)*time.Second, map[string]any{
+	err = memStore.InitBackup(ctx, backupFile, cnf.StoreInterval, map[string]any{
 		"Metric":             models.Metric{},
 		"Int64MetricValue":   models.NewInt64MetricValue(0),
 		"Float64MetricValue": models.NewFloat64MetricValue(0),

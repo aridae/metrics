@@ -2,16 +2,14 @@ package main
 
 import (
 	"context"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
-
 	"github.com/aridae/go-metrics-store/internal/agent/config"
 	metricsservice "github.com/aridae/go-metrics-store/internal/agent/downstreams/metrics-service"
 	metricsreporting "github.com/aridae/go-metrics-store/internal/agent/metrics-reporting"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http/mw/sha256-mw"
 	"github.com/aridae/go-metrics-store/pkg/logger"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 var (
@@ -44,8 +42,8 @@ func main() {
 	)
 	metricsAgent := metricsreporting.NewAgent(
 		metricsServiceClient,
-		time.Second*time.Duration(cnf.PollIntervalSeconds),
-		time.Second*time.Duration(cnf.ReportIntervalSeconds),
+		cnf.PollInterval,
+		cnf.ReportInterval,
 		cnf.ReportersPoolSize,
 	)
 
