@@ -2,6 +2,10 @@ package main
 
 import (
 	"context"
+	"crypto/rsa"
+	rsamw "github.com/aridae/go-metrics-store/internal/server/transport/http/mw/rsa-mw"
+	rsacrypto "github.com/aridae/go-metrics-store/pkg/rsa-crypto"
+	"net/http"
 	_ "net/http/pprof" // подключаем пакет pprof
 	"os"
 	"os/signal"
@@ -13,7 +17,7 @@ import (
 	"github.com/aridae/go-metrics-store/internal/server/repos/metric"
 	"github.com/aridae/go-metrics-store/internal/server/repos/metric/metric-inmem-repo"
 	"github.com/aridae/go-metrics-store/internal/server/repos/metric/metric-pg-repo"
-	"github.com/aridae/go-metrics-store/internal/server/transport/http"
+	serverhttp "github.com/aridae/go-metrics-store/internal/server/transport/http"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http/handlers"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http/mw/gzip-mw"
 	"github.com/aridae/go-metrics-store/internal/server/transport/http/mw/logging-mw"
@@ -37,6 +41,8 @@ var (
 )
 
 func main() {
+	// перехват сигналов syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT и завершение контекста,
+	// по которому завершается и все приложение, требуется в инкременте 23, но было реализовано ранее
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		signalCh := make(chan os.Signal, 1)
@@ -92,13 +98,20 @@ func main() {
 
 	httpRouter := handlers.NewRouter(useCaseController, routerOptions...)
 
-	httpServer := http.NewServer(cnf.Address, httpRouter,
+	serverMiddlewares := []func(next http.Handler) http.Handler{
 		gzipmw.GzipDecompressRequestMiddleware,
 		sha256mw.ValidateRequestServerMiddleware(cnf.Key),
 		sha256mw.SignResponseServerMiddleware(cnf.Key),
 		gzipmw.GzipCompressResponseMiddleware,
 		loggingmw.LoggingMiddleware,
-	)
+	}
+
+	if cnf.CryptoKey != "" {
+		privateKey := mustParsePrivateKey(cnf.CryptoKey)
+		serverMiddlewares = append(serverMiddlewares, rsamw.DecryptRequestMiddleware(privateKey))
+	}
+
+	httpServer := serverhttp.NewServer(cnf.Address, httpRouter, serverMiddlewares...)
 
 	if err := httpServer.Run(ctx); err != nil {
 		logger.Fatalf("failed to start server: %v", err)
@@ -142,4 +155,13 @@ func mustInitPostgresClient(ctx context.Context, cnf *config.Config) *postgres.C
 	}
 
 	return client
+}
+
+func mustParsePrivateKey(path string) *rsa.PrivateKey {
+	privateKey, err := rsacrypto.FromFile(path, rsacrypto.ParsePrivateKey)
+	if err != nil {
+		logger.Fatalf("failed to load private key: %v", err)
+	}
+
+	return privateKey
 }

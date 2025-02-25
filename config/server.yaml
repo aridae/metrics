@@ -1,4 +1,0 @@
-address: "localhost:8080"
-store_interval: 3
-file_storage_path: "./.data"
-restore: true

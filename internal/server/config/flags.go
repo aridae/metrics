@@ -5,7 +5,9 @@ import (
 	"time"
 )
 
-type flags struct {
+type flagsconf struct {
+	ConfigFilePath          string
+	CryptoKey               string
 	AddressOverride         string
 	FileStoragePathOverride string
 	DatabaseDsnOverride     string
@@ -14,8 +16,8 @@ type flags struct {
 	RestoreOverride         bool
 }
 
-func parseFlags() flags {
-	flgs := flags{}
+func parseFlags() flagsconf {
+	flgs := flagsconf{}
 
 	flag.StringVar(&flgs.AddressOverride, "a", addressDefaultVal, "Address of server")
 
@@ -30,14 +32,19 @@ func parseFlags() flags {
 
 	flag.StringVar(&flgs.Key, "k", "", "ключ для подписания запросов SHA256 подписью")
 
+	flag.StringVar(&flgs.CryptoKey, "crypto-key", "", "путь до файла с приватным ключом")
+
+	flag.StringVar(&flgs.ConfigFilePath, "c", "", "Path to config file")
+
 	flag.Parse()
 
 	return flgs
 }
 
-func (f flags) override(cfg *Config) {
+func (f flagsconf) override(cfg *Config) {
 	cfg.overrideAddressIfNotDefault(f.AddressOverride, "flags")
 	cfg.overrideStoreIntervalIfNotDefault(f.StoreIntervalOverride, "flags")
 	cfg.overrideFileStoragePathIfNotDefault(f.FileStoragePathOverride, "flags")
 	cfg.overrideRestoreIfNotDefault(f.RestoreOverride, "flags")
+	cfg.overrideCryptoKeyIfNotDefault(f.CryptoKey, "flags")
 }

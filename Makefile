@@ -94,3 +94,10 @@ build-staticlint:
 .PHONY: staticlint
 staticlint: build-staticlint
 	PATH=${PATH}:${LOCALBIN} ${STATICLINTBIN} ${pattern}
+
+# usage: make generate-rsa-keys path=.certs/key
+# output: .certs/key.pem containing private key and .certs/key.pem.pub containing public key
+.PHONY: generate-rsa-keys
+generate-rsa-keys:
+	openssl genrsa -out ${path}.pem 4096
+	openssl rsa -in ${path}.pem -outform PEM -pubout -out ${path}.pem.pub
