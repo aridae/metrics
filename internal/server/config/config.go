@@ -45,7 +45,7 @@ func (c *Config) init() {
 
 	flagsValues := parseFlags()
 
-	envValues, err := readEnv()
+	envValues, err := parseEnv()
 	if err != nil {
 		logger.Errorf("error parsing environment, proceeding without env overrides: %v", err)
 	}
@@ -59,11 +59,11 @@ func (c *Config) init() {
 	if configFilePath != "" {
 		jsonFileValues, err = parseJSONFile(configFilePath)
 		if err != nil {
-			logger.Errorf("error parsing yaml config, proceeding without yaml overrides: %v", err)
+			logger.Errorf("error parsing json config, proceeding without yaml overrides: %v", err)
 		}
 	}
 
-	// json файл если есть, используем его
+	// json файл если есть, используем его - с наименьшим приоритетом
 	if jsonFileValues != nil {
 		jsonFileValues.override(c)
 	}
@@ -143,4 +143,14 @@ func (c *Config) overrideKeyIfNotDefault(key string, source string) {
 
 	logger.Infof("overriding key from %s", source)
 	c.Key = key
+}
+
+func (c *Config) overrideCryptoKeyIfNotDefault(cryptoKey string, source string) {
+	if cryptoKey == "" {
+		logger.Debugf("source %s provided empty crypto key value, not overriding", source)
+		return
+	}
+
+	logger.Infof("overriding cryptoKey from %s", source)
+	c.CryptoKey = cryptoKey
 }

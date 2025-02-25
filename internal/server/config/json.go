@@ -8,10 +8,12 @@ import (
 )
 
 type jsonconf struct {
-	AddressOverride         *string        `json:"address"`
-	StoreIntervalOverride   *time.Duration `json:"store_interval"`
-	FileStoragePathOverride *string        `json:"file_storage_path"`
-	RestoreOverride         *bool          `json:"restore"`
+	CryptoKey                    *string `env:"crypto_key"`
+	AddressOverride              *string `env:"address"`
+	StoreIntervalSecondsOverride *int64  `env:"store_interval"`
+	FileStoragePathOverride      *string `env:"store_file"`
+	RestoreOverride              *bool   `env:"restore"`
+	DatabaseDsnOverride          *string `env:"database_dsn"`
 }
 
 func parseJSONFile(path string) (*jsonconf, error) {
@@ -31,18 +33,27 @@ func parseJSONFile(path string) (*jsonconf, error) {
 
 func (f jsonconf) override(cfg *Config) {
 	if f.AddressOverride != nil {
-		cfg.overrideAddressIfNotDefault(*f.AddressOverride, "json config")
+		cfg.overrideAddressIfNotDefault(*f.AddressOverride, "json")
 	}
 
-	if f.StoreIntervalOverride != nil {
-		cfg.overrideStoreIntervalIfNotDefault(*f.StoreIntervalOverride, "json config")
+	if f.StoreIntervalSecondsOverride != nil {
+		storeInterval := time.Duration(*f.StoreIntervalSecondsOverride) * time.Second
+		cfg.overrideStoreIntervalIfNotDefault(storeInterval, "json")
 	}
 
 	if f.FileStoragePathOverride != nil {
-		cfg.overrideFileStoragePathIfNotDefault(*f.FileStoragePathOverride, "json config")
+		cfg.overrideFileStoragePathIfNotDefault(*f.FileStoragePathOverride, "json")
 	}
 
 	if f.RestoreOverride != nil {
-		cfg.overrideRestoreIfNotDefault(*f.RestoreOverride, "json config")
+		cfg.overrideRestoreIfNotDefault(*f.RestoreOverride, "json")
+	}
+
+	if f.DatabaseDsnOverride != nil {
+		cfg.overrideDatabaseDNSIfNotDefault(*f.DatabaseDsnOverride, "json")
+	}
+
+	if f.CryptoKey != nil {
+		cfg.overrideCryptoKeyIfNotDefault(*f.CryptoKey, "json")
 	}
 }

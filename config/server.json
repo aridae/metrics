@@ -1,4 +1,8 @@
-address: "localhost:8080"
-store_interval: 3
-file_storage_path: "./.data"
-restore: true
+{
+  "address": "localhost:8080",
+  "restore": true,
+  "store_interval": "1s",
+  "store_file": "/path/to/file.db",
+  "database_dsn": "",
+  "crypto_key": "/path/to/key.pem"
+}
