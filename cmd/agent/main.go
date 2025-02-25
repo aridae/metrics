@@ -23,6 +23,8 @@ var (
 )
 
 func main() {
+	// перехват сигналов syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT и завершение контекста,
+	// по которому завершается и все приложение, требуется в инкременте 23, но было реализовано ранее
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		signalCh := make(chan os.Signal, 1)
