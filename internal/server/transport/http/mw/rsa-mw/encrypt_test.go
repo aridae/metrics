@@ -28,9 +28,12 @@ func TestEncryptRequestClientMiddlewareNilKey(t *testing.T) {
 
 	rt := EncryptRequestClientMiddleware(nil)(roundTripStub{})
 
-	_, err := rt.RoundTrip(req)
+	resp, err := rt.RoundTrip(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp != nil && resp.Body != nil {
+		_ = resp.Body.Close()
 	}
 
 	// Проверяем, что тело запроса НЕ было зашифровано
@@ -49,9 +52,12 @@ func TestEncryptRequestClientMiddlewareSuccess(t *testing.T) {
 
 	rt := EncryptRequestClientMiddleware(&key.PublicKey)(roundTripStub{})
 
-	_, err := rt.RoundTrip(req)
+	resp, err := rt.RoundTrip(req)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp != nil && resp.Body != nil {
+		_ = resp.Body.Close()
 	}
 
 	// Проверяем, что тело запроса было зашифровано
@@ -73,6 +79,10 @@ func TestEncryptRequestClientMiddlewareError(t *testing.T) {
 
 	rt := EncryptRequestClientMiddleware(&key.PublicKey)(nil)
 
-	_, err = rt.RoundTrip(req)
+	resp, err := rt.RoundTrip(req)
+	if resp != nil && resp.Body != nil {
+		_ = resp.Body.Close()
+	}
+
 	require.Error(t, err)
 }

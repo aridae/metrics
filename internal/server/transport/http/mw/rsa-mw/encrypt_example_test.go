@@ -27,9 +27,12 @@ func ExampleEncryptRequestClientMiddleware() {
 
 	// Настройка middleware и выполнение запроса
 	rt := EncryptRequestClientMiddleware(&key.PublicKey)(roundTripStub{})
-	_, err = rt.RoundTrip(req)
+	resp, err := rt.RoundTrip(req)
 	if err != nil {
 		log.Fatalf("ошибка отправки запроса: %v", err)
+	}
+	if resp != nil && resp.Body != nil {
+		_ = resp.Body.Close()
 	}
 
 	// Получение зашифрованного тела запроса
