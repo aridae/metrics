@@ -7,7 +7,9 @@ import (
 	"github.com/caarlos0/env/v6"
 )
 
-type environs struct {
+type envconf struct {
+	ConfigFilePath               *string `env:"CONFIG"`
+	CryptoKey                    *string `env:"CRYPTO_KEY"`
 	AddressOverride              *string `env:"ADDRESS"`
 	StoreIntervalSecondsOverride *int64  `env:"STORE_INTERVAL"`
 	FileStoragePathOverride      *string `env:"FILE_STORAGE_PATH"`
@@ -16,18 +18,18 @@ type environs struct {
 	KeyOverride                  *string `env:"KEY"`
 }
 
-func readEnv() (environs, error) {
-	envs := environs{}
+func parseEnv() (*envconf, error) {
+	envs := envconf{}
 
 	err := env.Parse(&envs)
 	if err != nil {
-		return environs{}, fmt.Errorf("failed to parse env variables: %w", err)
+		return nil, fmt.Errorf("failed to parse env variables: %w", err)
 	}
 
-	return envs, nil
+	return &envs, nil
 }
 
-func (e environs) override(cfg *Config) {
+func (e envconf) override(cfg *Config) {
 	if e.AddressOverride != nil {
 		cfg.overrideAddressIfNotDefault(*e.AddressOverride, "env")
 	}
@@ -51,5 +53,9 @@ func (e environs) override(cfg *Config) {
 
 	if e.KeyOverride != nil {
 		cfg.overrideKeyIfNotDefault(*e.KeyOverride, "env")
+	}
+
+	if e.CryptoKey != nil {
+		cfg.overrideCryptoKeyIfNotDefault(*e.CryptoKey, "env")
 	}
 }

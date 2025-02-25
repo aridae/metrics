@@ -8,8 +8,6 @@ import (
 )
 
 const (
-	yamlConfigPath = "./config/server.yaml"
-
 	addressDefaultVal          = "localhost:8080"
 	storeIntervalDefault       = time.Duration(300) * time.Second
 	fileStoragePathDefault     = "./.data"
@@ -23,6 +21,7 @@ var (
 )
 
 type Config struct {
+	CryptoKey           string
 	Address             string
 	FileStoragePath     string
 	DatabaseDsn         string
@@ -44,22 +43,36 @@ func Obtain() *Config {
 func (c *Config) init() {
 	c.defaults()
 
-	// инициализация структуры конфига из yaml файла
-	yamlsValues, err := parseYaml(yamlConfigPath)
+	flagsValues := parseFlags()
+
+	envValues, err := parseEnv()
 	if err != nil {
-		logger.Errorf("error parsing yaml config, proceeding without yaml overrides: %v", err)
-	} else {
-		yamlsValues.override(c)
+		logger.Errorf("error parsing environment, proceeding without env overrides: %v", err)
+	}
+
+	configFilePath := flagsValues.ConfigFilePath
+	if configFilePath == "" && envValues.ConfigFilePath != nil {
+		configFilePath = *envValues.ConfigFilePath
+	}
+
+	var jsonFileValues *jsonconf
+	if configFilePath != "" {
+		jsonFileValues, err = parseJSONFile(configFilePath)
+		if err != nil {
+			logger.Errorf("error parsing json config, proceeding without yaml overrides: %v", err)
+		}
+	}
+
+	// json файл если есть, используем его - с наименьшим приоритетом
+	if jsonFileValues != nil {
+		jsonFileValues.override(c)
 	}
 
 	// перезатираем значениями, переданными через флаги
-	parseFlags().override(c)
+	flagsValues.override(c)
 
 	// env, если есть, затирает флаги
-	envValues, err := readEnv()
-	if err != nil {
-		logger.Errorf("error parsing environment, proceeding without env overrides: %v", err)
-	} else {
+	if envValues != nil {
 		envValues.override(c)
 	}
 }
@@ -130,4 +143,14 @@ func (c *Config) overrideKeyIfNotDefault(key string, source string) {
 
 	logger.Infof("overriding key from %s", source)
 	c.Key = key
+}
+
+func (c *Config) overrideCryptoKeyIfNotDefault(cryptoKey string, source string) {
+	if cryptoKey == "" {
+		logger.Debugf("source %s provided empty crypto key value, not overriding", source)
+		return
+	}
+
+	logger.Infof("overriding cryptoKey from %s", source)
+	c.CryptoKey = cryptoKey
 }
