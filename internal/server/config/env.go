@@ -8,6 +8,7 @@ import (
 )
 
 type environs struct {
+	CryptoKey                    *string `env:"CRYPTO_KEY"`
 	AddressOverride              *string `env:"ADDRESS"`
 	StoreIntervalSecondsOverride *int64  `env:"STORE_INTERVAL"`
 	FileStoragePathOverride      *string `env:"FILE_STORAGE_PATH"`

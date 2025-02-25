@@ -16,6 +16,10 @@ func parseEnv(cnf *Config) {
 		cnf.Key = envKey
 	}
 
+	if envCryptoKey := os.Getenv("CRYPTO_KEY"); envCryptoKey != "" {
+		cnf.CryptoKey = envCryptoKey
+	}
+
 	if envReportInterval := os.Getenv("REPORT_INTERVAL"); envReportInterval != "" {
 		reportIntervalSec, err := strconv.ParseInt(envReportInterval, 10, 64)
 		if err != nil {

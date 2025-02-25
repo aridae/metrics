@@ -3,6 +3,7 @@ package config
 import "time"
 
 type Config struct {
+	CryptoKey         string
 	Address           string
 	Key               string
 	PollInterval      time.Duration
