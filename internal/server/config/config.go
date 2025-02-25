@@ -8,8 +8,6 @@ import (
 )
 
 const (
-	yamlConfigPath = "./config/server.yaml"
-
 	addressDefaultVal          = "localhost:8080"
 	storeIntervalDefault       = time.Duration(300) * time.Second
 	fileStoragePathDefault     = "./.data"
@@ -45,22 +43,36 @@ func Obtain() *Config {
 func (c *Config) init() {
 	c.defaults()
 
-	// инициализация структуры конфига из yaml файла
-	yamlsValues, err := parseYaml(yamlConfigPath)
-	if err != nil {
-		logger.Errorf("error parsing yaml config, proceeding without yaml overrides: %v", err)
-	} else {
-		yamlsValues.override(c)
-	}
+	flagsValues := parseFlags()
 
-	// перезатираем значениями, переданными через флаги
-	parseFlags().override(c)
-
-	// env, если есть, затирает флаги
 	envValues, err := readEnv()
 	if err != nil {
 		logger.Errorf("error parsing environment, proceeding without env overrides: %v", err)
-	} else {
+	}
+
+	configFilePath := flagsValues.ConfigFilePath
+	if configFilePath == "" && envValues.ConfigFilePath != nil {
+		configFilePath = *envValues.ConfigFilePath
+	}
+
+	var jsonFileValues *jsonconf
+	if configFilePath != "" {
+		jsonFileValues, err = parseJSONFile(configFilePath)
+		if err != nil {
+			logger.Errorf("error parsing yaml config, proceeding without yaml overrides: %v", err)
+		}
+	}
+
+	// json файл если есть, используем его
+	if jsonFileValues != nil {
+		jsonFileValues.override(c)
+	}
+
+	// перезатираем значениями, переданными через флаги
+	flagsValues.override(c)
+
+	// env, если есть, затирает флаги
+	if envValues != nil {
 		envValues.override(c)
 	}
 }

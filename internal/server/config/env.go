@@ -8,6 +8,7 @@ import (
 )
 
 type environs struct {
+	ConfigFilePath               *string `env:"CONFIG"`
 	CryptoKey                    *string `env:"CRYPTO_KEY"`
 	AddressOverride              *string `env:"ADDRESS"`
 	StoreIntervalSecondsOverride *int64  `env:"STORE_INTERVAL"`
@@ -17,15 +18,15 @@ type environs struct {
 	KeyOverride                  *string `env:"KEY"`
 }
 
-func readEnv() (environs, error) {
+func readEnv() (*environs, error) {
 	envs := environs{}
 
 	err := env.Parse(&envs)
 	if err != nil {
-		return environs{}, fmt.Errorf("failed to parse env variables: %w", err)
+		return nil, fmt.Errorf("failed to parse env variables: %w", err)
 	}
 
-	return envs, nil
+	return &envs, nil
 }
 
 func (e environs) override(cfg *Config) {

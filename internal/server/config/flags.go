@@ -6,6 +6,7 @@ import (
 )
 
 type flags struct {
+	ConfigFilePath          string
 	CryptoKey               string
 	AddressOverride         string
 	FileStoragePathOverride string
@@ -32,6 +33,8 @@ func parseFlags() flags {
 	flag.StringVar(&flgs.Key, "k", "", "ключ для подписания запросов SHA256 подписью")
 
 	flag.StringVar(&flgs.CryptoKey, "crypto-key", "", "путь до файла с приватным ключом")
+
+	flag.StringVar(&flgs.ConfigFilePath, "c", "", "Path to config file")
 
 	flag.Parse()
 
